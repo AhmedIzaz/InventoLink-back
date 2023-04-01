@@ -1,17 +1,11 @@
-import { RouterOptions, IRouter } from "express";
-import itemRoutes from "./configurationRoutes/itemRoutes";
+import { Router, Express } from "express";
+import configurationRoutes from "./configurationRoutes";
+export interface IRoute {
+  pathName: string;
+  controller: Router;
+}
+const routes: IRoute[] = [...configurationRoutes];
 
-// interface IRoute{
-//     pathName:string,
-//     controller:IRouter
-// }
-const routes = [
-  {
-    pathname: "/item",
-    controller: itemRoutes,
-  },
-];
-
-export default (app: any) => {
-  routes.forEach((item) => app.use(item?.pathname, item?.controller));
+export default (app: Express) => {
+  routes.forEach((item) => app.use(item?.pathName, item?.controller));
 };
