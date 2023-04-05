@@ -5,11 +5,52 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model master_account {
+  id                   Int                    @id @default(autoincrement())
+  account_name         String
+  description          String
+  master_business_unit master_business_unit[]
+  master_item_category master_item_category[]
+  user                 user[]
+  employee             employee[]
+}
+
+model master_business_unit {
+  id                 Int             @id @default(autoincrement())
+  business_unit_name String
+  description        String
+  account_id         Int?
+  master_account     master_account? @relation(references: [id], fields: [account_id])
+}
+
+model user {
+  id             Int             @id @default(autoincrement())
+  name           String
+  email          String
+  password       String
+  account_id     Int?
+  master_account master_account? @relation(references: [id], fields: [account_id])
+  employee       employee[]
+}
+
+model employee {
+  id             Int             @id @default(autoincrement())
+  name           String
+  email          String
+  password       String
+  user_id        Int?
+  user           user?           @relation(references: [id], fields: [user_id])
+  account_id     Int?
+  master_account master_account? @relation(references: [id], fields: [account_id])
+}
+
 model master_item_category {
-  id            Int           @id @default(autoincrement())
-  category_name String        @db.VarChar(100)
-  description   String
-  items         master_item[]
+  id             Int             @id @default(autoincrement())
+  category_name  String          @db.VarChar(100)
+  description    String
+  items          master_item[]
+  account_id     Int?
+  master_account master_account? @relation(references: [id], fields: [account_id])
 }
 
 model master_item {
