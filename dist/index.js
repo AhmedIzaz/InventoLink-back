@@ -10,14 +10,18 @@ const helmet_1 = __importDefault(require("helmet"));
 const app = (0, express_1.default)();
 const index_1 = __importDefault(require("./routers/index"));
 const client_1 = require("@prisma/client");
+const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
+const swaggerSpecWithOptions_1 = __importDefault(require("./utils/swaggerSpecWithOptions"));
 exports.globalPrisma = new client_1.PrismaClient();
 app.use(express_1.default.json({ limit: "1mb" }));
 app.use((0, cors_1.default)({
-    origin: "*"
+    origin: "*",
 }));
 app.use((0, helmet_1.default)());
 app.use(express_1.default.urlencoded({ extended: true, limit: "1mb" }));
+app.use("/api", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swaggerSpecWithOptions_1.default));
 (0, index_1.default)(app);
-app.listen(4000, () => {
-    console.log("server is running on port 4000");
+const port = process.env.DEV_SERVER_PORT || 4000;
+app.listen(port, () => {
+    console.log(`server is running on port ${port}`);
 });
