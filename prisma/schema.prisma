@@ -8,58 +8,35 @@ generator client {
 model master_account {
   id                   Int                    @id @default(autoincrement())
   account_name         String
-  description          String
+  description          String?
   master_business_unit master_business_unit[]
-  master_item_category master_item_category[]
-  user                 user[]
-  employee             employee[]
+  menu_table           menu_table[]
 }
 
 model master_business_unit {
   id                 Int             @id @default(autoincrement())
   business_unit_name String
-  description        String
-  account_id         Int?
+  description        String?
+  account_id         Int
   master_account     master_account? @relation(references: [id], fields: [account_id])
+  menu_table         menu_table[]
 }
 
-model user {
-  id             Int             @id @default(autoincrement())
-  name           String          @db.VarChar(100)
-  email          String          @db.VarChar(100)
-  password       String
-  account_id     Int?
-  master_account master_account? @relation(references: [id], fields: [account_id])
-  employee       employee[]
-}
-
-model employee {
-  id             Int             @id @default(autoincrement())
-  name           String
-  email          String
-  password       String
-  user_id        Int?
-  user           user?           @relation(references: [id], fields: [user_id])
-  account_id     Int?
-  master_account master_account? @relation(references: [id], fields: [account_id])
-}
-
-model master_item_category {
-  id             Int             @id @default(autoincrement())
-  category_name  String          @db.VarChar(100)
-  description    String
-  items          master_item[]
-  account_id     Int?
-  master_account master_account? @relation(references: [id], fields: [account_id])
-}
-
-model master_item {
-  id            Int                  @id @default(autoincrement())
-  itemName      String               @db.VarChar(100)
-  price         Float
-  description   String
-  category_id   Int
-  item_category master_item_category @relation(references: [id], fields: [category_id])
+model menu_table {
+  id                   Int                   @id @default(autoincrement())
+  path                 String
+  // label is for showing the name of the menu
+  label                String                @db.VarChar(100)
+  is_first_label       Boolean
+  is_second_label      Boolean
+  is_third_label       Boolean
+  is_active            Boolean
+  // title is for showing the name of the page
+  title                String
+  account_id           Int
+  master_account       master_account?       @relation(references: [id], fields: [account_id])
+  business_unit_id     Int?
+  master_business_unit master_business_unit? @relation(references: [id], fields: [business_unit_id])
 }
 
 datasource db {
