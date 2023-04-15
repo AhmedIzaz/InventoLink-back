@@ -5,12 +5,35 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model menu_table {
+  id                   Int                   @id @default(autoincrement())
+  path                 String
+  // label is for showing the name of the menu
+  label                String                @db.VarChar(100)
+  is_first_label       Boolean
+  is_second_label      Boolean
+  is_third_label       Boolean
+  is_active            Boolean               @default(true)
+  // title is for showing the name of the page
+  title                String
+  account_id           Int
+  master_account       master_account?       @relation(references: [id], fields: [account_id])
+  business_unit_id     Int?
+  master_business_unit master_business_unit? @relation(references: [id], fields: [business_unit_id])
+}
+
 model master_account {
   id                   Int                    @id @default(autoincrement())
   account_name         String
   description          String?
   master_business_unit master_business_unit[]
   menu_table           menu_table[]
+  user                 user[]
+  is_active            Boolean                @default(true)
+  employee             employee[]
+  workplace            workplace[]
+  department           department[]
+  designation          designation[]
 }
 
 model master_business_unit {
@@ -20,23 +43,95 @@ model master_business_unit {
   account_id         Int
   master_account     master_account? @relation(references: [id], fields: [account_id])
   menu_table         menu_table[]
+  user               user[]
+  is_active          Boolean         @default(true)
+  employee           employee[]
+  workplace          workplace[]
+  department         department[]
+  designation        designation[]
 }
 
-model menu_table {
+model workplace {
   id                   Int                   @id @default(autoincrement())
-  path                 String
-  // label is for showing the name of the menu
-  label                String                @db.VarChar(100)
-  is_first_label       Boolean
-  is_second_label      Boolean
-  is_third_label       Boolean
-  is_active            Boolean
-  // title is for showing the name of the page
-  title                String
+  workplace_name       String                @db.VarChar(100)
+  description          String?
+  address              String?
   account_id           Int
   master_account       master_account?       @relation(references: [id], fields: [account_id])
   business_unit_id     Int?
   master_business_unit master_business_unit? @relation(references: [id], fields: [business_unit_id])
+  is_active            Boolean               @default(true)
+  employee             employee[]
+}
+
+model department {
+  id                   Int                   @id @default(autoincrement())
+  department_name      String                @db.VarChar(100)
+  description          String?
+  account_id           Int
+  master_account       master_account?       @relation(references: [id], fields: [account_id])
+  business_unit_id     Int?
+  master_business_unit master_business_unit? @relation(references: [id], fields: [business_unit_id])
+  is_active            Boolean               @default(true)
+  employee             employee[]
+}
+
+model designation {
+  id                   Int                   @id @default(autoincrement())
+  designation_name     String                @db.VarChar(100)
+  description          String?
+  account_id           Int
+  master_account       master_account?       @relation(references: [id], fields: [account_id])
+  business_unit_id     Int?
+  master_business_unit master_business_unit? @relation(references: [id], fields: [business_unit_id])
+  is_active            Boolean               @default(true)
+  employee             employee[]
+}
+
+model user {
+  id                   Int                   @id @default(autoincrement())
+  username             String                @db.VarChar(100)
+  email                String                @db.VarChar(100)
+  password             String
+  account_id           Int
+  master_account       master_account?       @relation(references: [id], fields: [account_id])
+  business_unit_id     Int?
+  master_business_unit master_business_unit? @relation(references: [id], fields: [business_unit_id])
+  user_type_id         Int
+  employee             employee?
+  is_active            Boolean               @default(true)
+}
+
+model employee {
+  id                   Int                   @id @default(autoincrement())
+  employee_name        String
+  employee_code        String
+  mobile_number        String?
+  personal_email       String?
+  official_email       String?
+  profile_picture_id   Int?
+  bio                  String?
+  address              String?
+  account_id           Int
+  master_account       master_account?       @relation(references: [id], fields: [account_id])
+  business_unit_id     Int?
+  master_business_unit master_business_unit? @relation(references: [id], fields: [business_unit_id])
+  user_id              Int                   @unique
+  user                 user                  @relation(references: id, fields: user_id)
+  workplace_id         Int?
+  workplace            workplace?            @relation(references: [id], fields: [workplace_id])
+  department_id        Int?
+  department           department?           @relation(references: [id], fields: [department_id])
+  designation_id       Int?
+  designation          designation?          @relation(references: [id], fields: [designation_id])
+  is_active            Boolean               @default(true)
+}
+
+model file_table {
+  id        Int     @id @default(autoincrement())
+  type_id   Int
+  file_id   Int
+  is_active Boolean @default(true)
 }
 
 datasource db {

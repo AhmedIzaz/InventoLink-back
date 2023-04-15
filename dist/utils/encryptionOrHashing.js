@@ -8,11 +8,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.helloWorld = void 0;
-const helloWorld = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const data = "Hello";
-    res.send(data);
-    res.end();
+exports.hashPassword = void 0;
+const bcrypt_1 = __importDefault(require("bcrypt"));
+const hashPassword = (password) => __awaiter(void 0, void 0, void 0, function* () {
+    const salt = yield bcrypt_1.default.genSalt(process.env.PASSWORD_SALT ? +process.env.PASSWORD_SALT : 11);
+    const hashedPassword = yield bcrypt_1.default.hash(password, salt);
+    return { hashedPassword };
 });
-exports.helloWorld = helloWorld;
+exports.hashPassword = hashPassword;

@@ -10,16 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createCategory = void 0;
-const __1 = require("../../..");
 const createCategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { category_name, description } = req.body;
-        yield __1.globalPrisma.master_item_category.create({
-            data: {
-                category_name,
-                description,
-            },
-        });
+        console.log(category_name, description);
         return res.send("Created Successfully").status(200).end();
     }
     catch (e) {
