@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { IUser } from "../../interfaces/configurationInterfaces";
+import { IUser } from "../../../interfaces/configurationInterfaces";
 
 const router = express.Router();
 /**
