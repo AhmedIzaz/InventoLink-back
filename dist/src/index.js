@@ -21,6 +21,7 @@ const index_1 = __importDefault(require("./routers/index"));
 const client_1 = require("@prisma/client");
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const swaggerSpecWithOptions_1 = __importDefault(require("../utils/swaggerSpecWithOptions"));
+const encryptionOrHashing_1 = require("../utils/encryptionOrHashing");
 exports.globalPrisma = new client_1.PrismaClient();
 app.use(express_1.default.json({ limit: "1mb" }));
 app.use((0, cors_1.default)({
@@ -34,12 +35,12 @@ app.use("/api", swagger_ui_express_1.default.serve, swagger_ui_express_1.default
 app.get("/here", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.send("here").end();
 }));
-// app.post("/demoUser", async (req: Request, res: Response) => {
-//   console.log("here");
-//   const { password } = req.body;
-//   const { hashedPassword } = await hashPassword(password);
-//   res.send(hashedPassword || "error");
-// });
+app.post("/demoUser", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("here");
+    const { password } = req.body;
+    const { hashedPassword } = yield (0, encryptionOrHashing_1.hashPassword)(password);
+    res.send(hashedPassword || "error");
+}));
 const port = process.env.DEV_SERVER_PORT || 4000;
 app.listen(port, () => {
     console.log(`server is running on port ${port}`);

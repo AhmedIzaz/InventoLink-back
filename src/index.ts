@@ -24,12 +24,12 @@ mainRoutes(app);
 app.get("/here", async (req: Request, res: Response) => {
   res.send("here").end();
 });
-// app.post("/demoUser", async (req: Request, res: Response) => {
-//   console.log("here");
-//   const { password } = req.body;
-//   const { hashedPassword } = await hashPassword(password);
-//   res.send(hashedPassword || "error");
-// });
+app.post("/demoUser", async (req: Request, res: Response) => {
+  console.log("here");
+  const { password } = req.body;
+  const { hashedPassword } = await hashPassword(password);
+  res.send(hashedPassword || "error");
+});
 const port = process.env.DEV_SERVER_PORT || 4000;
 
 app.listen(port, () => {

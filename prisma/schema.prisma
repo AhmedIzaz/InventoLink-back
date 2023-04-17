@@ -20,35 +20,50 @@ model menu_table {
   master_account       master_account?       @relation(references: [id], fields: [account_id])
   business_unit_id     Int?
   master_business_unit master_business_unit? @relation(references: [id], fields: [business_unit_id])
+  user_permitted_menu  user_permitted_menu[]
+}
+
+model user_permitted_menu {
+  id        Int        @id @default(autoincrement())
+  user_id   Int
+  user      user       @relation(references: [id], fields: [user_id])
+  menu_id   Int
+  menu      menu_table @relation(references: [id], fields: [menu_id])
+  is_create Boolean    @default(false)
+  is_edit   Boolean    @default(false)
+  is_view   Boolean    @default(false)
+  is_delete Boolean    @default(false)
+  is_active Boolean    @default(true)
 }
 
 model master_account {
-  id                   Int                    @id @default(autoincrement())
-  account_name         String
-  description          String?
-  master_business_unit master_business_unit[]
-  menu_table           menu_table[]
-  user                 user[]
-  is_active            Boolean                @default(true)
-  employee             employee[]
-  workplace            workplace[]
-  department           department[]
-  designation          designation[]
+  id                           Int                            @id @default(autoincrement())
+  account_name                 String
+  description                  String?
+  master_business_unit         master_business_unit[]
+  menu_table                   menu_table[]
+  user                         user[]
+  is_active                    Boolean                        @default(true)
+  employee                     employee[]
+  workplace                    workplace[]
+  department                   department[]
+  designation                  designation[]
+  user_permitted_business_unit user_permitted_business_unit[]
 }
 
 model master_business_unit {
-  id                 Int             @id @default(autoincrement())
-  business_unit_name String
-  description        String?
-  account_id         Int
-  master_account     master_account? @relation(references: [id], fields: [account_id])
-  menu_table         menu_table[]
-  user               user[]
-  is_active          Boolean         @default(true)
-  employee           employee[]
-  workplace          workplace[]
-  department         department[]
-  designation        designation[]
+  id                           Int                            @id @default(autoincrement())
+  business_unit_name           String
+  description                  String?
+  account_id                   Int
+  master_account               master_account?                @relation(references: [id], fields: [account_id])
+  menu_table                   menu_table[]
+  is_active                    Boolean                        @default(true)
+  employee                     employee[]
+  workplace                    workplace[]
+  department                   department[]
+  designation                  designation[]
+  user_permitted_business_unit user_permitted_business_unit[]
 }
 
 model workplace {
@@ -89,17 +104,37 @@ model designation {
 }
 
 model user {
-  id                   Int                   @id @default(autoincrement())
-  username             String                @db.VarChar(100)
-  email                String                @db.VarChar(100)
-  password             String
+  id                           Int                            @id @default(autoincrement())
+  username                     String                         @db.VarChar(100)
+  email                        String                         @db.VarChar(100)
+  password                     String
+  account_id                   Int
+  master_account               master_account?                @relation(references: [id], fields: [account_id])
+  user_type_id                 Int
+  user_type                    user_type                      @relation(references: [id], fields: [user_type_id])
+  employee                     employee?
+  is_active                    Boolean                        @default(true)
+  user_permitted_business_unit user_permitted_business_unit[]
+  user_permitted_menu          user_permitted_menu[]
+}
+
+model user_permitted_business_unit {
+  id                   Int                  @id @default(autoincrement())
+  user_id              Int
+  user                 user                 @relation(references: [id], fields: [user_id])
   account_id           Int
-  master_account       master_account?       @relation(references: [id], fields: [account_id])
-  business_unit_id     Int?
-  master_business_unit master_business_unit? @relation(references: [id], fields: [business_unit_id])
-  user_type_id         Int
-  employee             employee?
-  is_active            Boolean               @default(true)
+  master_account       master_account       @relation(references: [id], fields: [account_id])
+  business_unit_id     Int
+  master_business_unit master_business_unit @relation(references: [id], fields: [business_unit_id])
+  is_active            Boolean              @default(true)
+}
+
+model user_type {
+  id             Int     @id @default(autoincrement())
+  user_type_name String  @db.VarChar(100)
+  description    String?
+  is_active      Boolean @default(true)
+  user           user[]
 }
 
 model employee {
