@@ -121,11 +121,11 @@ model user {
 model user_permitted_business_unit {
   id                   Int                  @id @default(autoincrement())
   user_id              Int
-  user                 user                 @relation(references: [id], fields: [user_id])
+  user                 user                 @relation(references: id, fields: user_id)
   account_id           Int
-  master_account       master_account       @relation(references: [id], fields: [account_id])
+  master_account       master_account       @relation(references: id, fields: account_id)
   business_unit_id     Int
-  master_business_unit master_business_unit @relation(references: [id], fields: [business_unit_id])
+  master_business_unit master_business_unit @relation(references: id, fields: business_unit_id)
   is_active            Boolean              @default(true)
 }
 
