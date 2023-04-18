@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import { IUser } from "../../../interfaces/configurationInterfaces";
+import { userLogin } from "../../controllers/configurationControllers/userController";
 
 const router = express.Router();
 /**
@@ -16,5 +17,5 @@ router.post("/signup", (req: Request<{}, {}, IUser>, res: Response) => {
   const { id, name, email, password } = req.body;
   res.json({ id, name, email, password }).end();
 });
-
+router.post("/login", userLogin);
 export default router;

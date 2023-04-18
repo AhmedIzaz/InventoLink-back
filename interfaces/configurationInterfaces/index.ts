@@ -5,7 +5,6 @@ export interface IUser {
   password?: string;
 }
 
-export interface ICategory {
-  category_name: string;
-  description: string;
-}
+
+
+// export 
