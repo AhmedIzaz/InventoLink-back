@@ -10,13 +10,13 @@ model menu_table {
   path                 String
   // label is for showing the name of the menu
   label                String                @db.VarChar(100)
-  is_first_label       Boolean
-  is_second_label      Boolean
-  is_third_label       Boolean
+  is_first_level       Boolean
+  is_second_level      Boolean
+  is_third_level       Boolean
   is_active            Boolean               @default(true)
   // title is for showing the name of the page
-  title                String
-  account_id           Int
+  title                String?
+  account_id           Int?
   master_account       master_account?       @relation(references: [id], fields: [account_id])
   business_unit_id     Int?
   master_business_unit master_business_unit? @relation(references: [id], fields: [business_unit_id])
@@ -106,7 +106,7 @@ model designation {
 model user {
   id                           Int                            @id @default(autoincrement())
   username                     String                         @db.VarChar(100)
-  email                        String                         @db.VarChar(100)
+  email                        String                         @unique @db.VarChar(100)
   password                     String
   account_id                   Int
   master_account               master_account?                @relation(references: [id], fields: [account_id])

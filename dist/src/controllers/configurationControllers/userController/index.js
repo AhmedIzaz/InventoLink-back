@@ -62,6 +62,7 @@ const userLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (!passwordMatched)
             return res.status(400).json({ message: "password is incorrect" }).end();
         const { password, id, email } = user, userInfoWithoutPassword = __rest(user, ["password", "id", "email"]);
+        const { employee } = userInfoWithoutPassword;
         const permittedBusinessUnitDDL = (_a = user === null || user === void 0 ? void 0 : user.user_permitted_business_unit) === null || _a === void 0 ? void 0 : _a.map((item) => {
             var _a, _b;
             return ({
@@ -77,7 +78,7 @@ const userLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 id,
                 email,
             },
-            employeeInformation: userInfoWithoutPassword === null || userInfoWithoutPassword === void 0 ? void 0 : userInfoWithoutPassword.employee,
+            employeeInformation: employee,
             permittedBusinessUnitDDL,
         })
             .end();
