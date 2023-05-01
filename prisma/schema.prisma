@@ -26,16 +26,20 @@ model menu_table {
 }
 
 model user_permitted_menu {
-  id        Int        @id @default(autoincrement())
-  user_id   Int
-  user      user       @relation(references: [id], fields: [user_id])
-  menu_id   Int
-  menu      menu_table @relation(references: [id], fields: [menu_id])
-  is_create Boolean    @default(false)
-  is_edit   Boolean    @default(false)
-  is_view   Boolean    @default(false)
-  is_delete Boolean    @default(false)
-  is_active Boolean    @default(true)
+  id                   Int                  @id @default(autoincrement())
+  user_id              Int
+  user                 user                 @relation(references: [id], fields: [user_id])
+  menu_id              Int
+  menu                 menu_table           @relation(references: [id], fields: [menu_id])
+  account_id           Int
+  master_account       master_account       @relation(references: [id], fields: [account_id])
+  business_unit_id     Int
+  master_business_unit master_business_unit @relation(references: [id], fields: [business_unit_id])
+  is_create            Boolean              @default(false)
+  is_edit              Boolean              @default(false)
+  is_view              Boolean              @default(false)
+  is_delete            Boolean              @default(false)
+  is_active            Boolean              @default(true)
 }
 
 model master_account {
@@ -51,6 +55,7 @@ model master_account {
   department                   department[]
   designation                  designation[]
   user_permitted_business_unit user_permitted_business_unit[]
+  user_permitted_menu          user_permitted_menu[]
 }
 
 model master_business_unit {
@@ -66,6 +71,7 @@ model master_business_unit {
   department                   department[]
   designation                  designation[]
   user_permitted_business_unit user_permitted_business_unit[]
+  user_permitted_menu          user_permitted_menu[]
 }
 
 model workplace {
