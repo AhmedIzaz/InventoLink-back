@@ -37,6 +37,7 @@ export const userLogin = async (req: Request<{}, {}, IUser>, res: Response) => {
       return res.status(400).json({ message: "password is incorrect" }).end();
 
     const { password, id, email, ...userInfoWithoutPassword } = user;
+    const { employee } = userInfoWithoutPassword;
     const permittedBusinessUnitDDL = user?.user_permitted_business_unit?.map(
       (item) => ({
         label: item?.master_business_unit?.business_unit_name,
@@ -51,8 +52,7 @@ export const userLogin = async (req: Request<{}, {}, IUser>, res: Response) => {
           id,
           email,
         },
-        employeeInformation: userInfoWithoutPassword?.employee,
-
+        employeeInformation: employee,
         permittedBusinessUnitDDL,
       })
       .end();
