@@ -22,6 +22,7 @@ model menu_table {
   master_business_unit master_business_unit? @relation(references: [id], fields: [business_unit_id])
   user_permitted_menu  user_permitted_menu[]
   parent_menu_id       Int?
+  has_sub_menu         Boolean               @default(false)
 }
 
 model user_permitted_menu {
