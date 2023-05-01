@@ -21,6 +21,7 @@ model menu_table {
   business_unit_id     Int?
   master_business_unit master_business_unit? @relation(references: [id], fields: [business_unit_id])
   user_permitted_menu  user_permitted_menu[]
+  parent_menu_id       Int?
 }
 
 model user_permitted_menu {
