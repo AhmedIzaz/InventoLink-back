@@ -9,7 +9,6 @@ middlewares(app);
 mainRoutes(app);
 app.use((req: Request, res: Response, next: NextFunction) => {
   const error: Error = new Error("Not found");
-
   next(error);
 });
 app.use((error: Error, req: Request, res: Response, next:NextFunction) => {
