@@ -4,21 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const userController_1 = require("../../controllers/configurationControllers/userController");
+const userController_1 = require("../../controllers/configurationControllers/userConfigurationController/userController");
+const authMiddlewares_1 = require("../../middlewares/authMiddlewares");
 const router = express_1.default.Router();
-/**
- * @swagger
- * /users:
- *   post:
- *     summary: create user.
- *     description: creating user with id, name, email, password.
- *     responses:
- *       200:
- *         description: user signup successfully.
- */
-router.post("/signup", (req, res) => {
-    const { id, name, email, password } = req.body;
-    res.json({ id, name, email, password }).end();
-});
-router.post("/login", userController_1.userLogin);
+router.post("/login", authMiddlewares_1.not_authorized, userController_1.userLogin);
+router.get("/user-permitted-menu", authMiddlewares_1.is_authorized, userController_1.get_user_permitted_business_unit_menu);
 exports.default = router;
