@@ -3,7 +3,7 @@ import { IUser } from "../../../interfaces/configurationInterfaces";
 import {
   get_user_permitted_business_unit_menu,
   userLogin,
-} from "../../controllers/configurationControllers/userController";
+} from "../../controllers/configurationControllers/userConfigurationController/userController";
 
 const router = express.Router();
 

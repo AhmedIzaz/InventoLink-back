@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { IUser } from "../../../../interfaces/configurationInterfaces";
-import { globalPrisma } from "../../../index";
+import { IUser } from "../../../../../interfaces/configurationInterfaces";
+import { globalPrisma } from "../../../../index";
 import bcrypt from "bcrypt";
 export const userLogin = async (req: Request<{}, {}, IUser>, res: Response) => {
   try {
