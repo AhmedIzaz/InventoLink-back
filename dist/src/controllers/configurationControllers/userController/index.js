@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.userLogin = void 0;
+exports.get_user_permitted_business_unit_menu = exports.userLogin = void 0;
 const index_1 = require("../../../index");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const userLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -88,3 +88,35 @@ const userLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.userLogin = userLogin;
+const get_user_permitted_business_unit_menu = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { user_id, business_unit_id } = req.query;
+    try {
+        const user_permitted_menu = yield index_1.globalPrisma.user_permitted_menu.findMany({
+            where: {
+                user_id: +user_id || 0,
+                business_unit_id: +business_unit_id || 0,
+            },
+            select: {
+                menu: {
+                    select: {
+                        id: true,
+                        parent_menu_id: true,
+                        title: true,
+                        label: true,
+                        is_first_level: true,
+                        is_second_level: true,
+                        is_third_level: true,
+                        path: true,
+                        has_sub_menu: true,
+                    },
+                },
+            },
+        });
+        const formattedMenu = user_permitted_menu.map((item) => item.menu);
+        return res.status(200).json(formattedMenu).end();
+    }
+    catch (error) {
+        return res.status(500).json({ message: error.message }).end();
+    }
+});
+exports.get_user_permitted_business_unit_menu = get_user_permitted_business_unit_menu;
