@@ -24,7 +24,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.get_user_permitted_business_unit_menu = exports.userLogin = void 0;
-const index_1 = require("../../../index");
+const index_1 = require("../../../../index");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const userLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;

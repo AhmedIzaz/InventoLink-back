@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { IUser } from "../../../../interfaces/configurationInterfaces";
-import { globalPrisma } from "../../../index";
+import { IUser } from "../../../../../interfaces/configurationInterfaces";
+import { globalPrisma } from "../../../../index";
 import bcrypt from "bcrypt";
 export const userLogin = async (req: Request<{}, {}, IUser>, res: Response) => {
   try {
@@ -56,6 +56,42 @@ export const userLogin = async (req: Request<{}, {}, IUser>, res: Response) => {
         permittedBusinessUnitDDL,
       })
       .end();
+  } catch (error: Error | any) {
+    return res.status(500).json({ message: error.message }).end();
+  }
+};
+
+export const get_user_permitted_business_unit_menu = async (
+  req: Request<{}, {}, {}, { user_id: string; business_unit_id: string }>,
+  res: Response
+) => {
+  const { user_id, business_unit_id } = req.query;
+  try {
+    const user_permitted_menu = await globalPrisma.user_permitted_menu.findMany(
+      {
+        where: {
+          user_id: +user_id || 0,
+          business_unit_id: +business_unit_id || 0,
+        },
+        select: {
+          menu: {
+            select: {
+              id: true,
+              parent_menu_id: true,
+              title: true,
+              label: true,
+              is_first_level: true,
+              is_second_level: true,
+              is_third_level: true,
+              path: true,
+              has_sub_menu: true,
+            },
+          },
+        },
+      }
+    );
+    const formattedMenu = user_permitted_menu.map((item) => item.menu);
+    return res.status(200).json(formattedMenu).end();
   } catch (error: Error | any) {
     return res.status(500).json({ message: error.message }).end();
   }
