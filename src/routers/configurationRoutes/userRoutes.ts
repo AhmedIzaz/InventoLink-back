@@ -1,8 +1,8 @@
-import express, { NextFunction, Request, Response } from "express";
-import { IUser } from "../../../interfaces/configurationInterfaces";
+import express from "express";
 import {
   get_user_permitted_business_unit_menu,
-  userLogin,
+  user_login,
+  user_signup,
 } from "../../controllers/configurationControllers/userConfigurationController/userController";
 import {
   is_authorized,
@@ -11,7 +11,8 @@ import {
 
 const router = express.Router();
 
-router.post("/login", not_authorized, userLogin);
+router.post("/login", not_authorized, user_login);
+router.post("/signup", not_authorized, user_signup);
 router.get(
   "/user-permitted-menu",
   is_authorized,
