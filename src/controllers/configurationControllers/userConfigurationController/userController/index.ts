@@ -2,7 +2,53 @@ import { Request, Response } from "express";
 import { IUser } from "../../../../../interfaces/configurationInterfaces";
 import { globalPrisma } from "../../../../index";
 import bcrypt from "bcrypt";
-export const userLogin = async (req: Request<{}, {}, IUser>, res: Response) => {
+import { user } from "@prisma/client";
+import jsonwebtoken from "jsonwebtoken";
+export const user_signup = async (
+  req: Request<{}, {}, user>,
+  res: Response
+) => {
+  try {
+    const {
+      email,
+      password: givenPassword,
+      username,
+      account_id,
+      user_type_id,
+    } = req.body;
+    if (!email || !givenPassword || !username)
+      return res
+        .status(400)
+        .json({ message: "email, password or name is missing" })
+        .end();
+    const user_exist = await globalPrisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+    if (user_exist)
+      return res.status(400).json({ message: "user already exist" }).end();
+
+    const encryptedPassword = await bcrypt.hash(givenPassword, 10);
+    await globalPrisma.user.create({
+      data: {
+        email,
+        password: encryptedPassword,
+        username,
+        account_id,
+        user_type_id,
+      },
+    });
+    return res.status(200).json({ message: "User created successfully" }).end();
+  } catch (error: Error | any) {
+    return res.status(500).json({ message: error.message }).end();
+  }
+};
+
+export const user_login = async (
+  req: Request<{}, {}, IUser>,
+  res: Response
+) => {
   try {
     const { email: givenEmail, password: givenPassword } = req.body;
     if (!givenEmail || !givenPassword)
@@ -19,6 +65,7 @@ export const userLogin = async (req: Request<{}, {}, IUser>, res: Response) => {
         email: true,
         password: true,
         employee: true,
+        username: true,
         user_permitted_business_unit: {
           select: {
             master_business_unit: {
@@ -36,8 +83,20 @@ export const userLogin = async (req: Request<{}, {}, IUser>, res: Response) => {
     if (!passwordMatched)
       return res.status(400).json({ message: "password is incorrect" }).end();
 
-    const { password, id, email, ...userInfoWithoutPassword } = user;
+    const { password, id, email, username, ...userInfoWithoutPassword } = user;
     const { employee } = userInfoWithoutPassword;
+    const token = jsonwebtoken.sign(
+      {
+        userId: id,
+        employeeId: employee?.id,
+        userName: username,
+        employeeName: employee?.employee_name,
+      },
+      process.env.JWT_SECRET_KEY || "secret key",
+      {
+        expiresIn: "1 days",
+      }
+    );
     const permittedBusinessUnitDDL = user?.user_permitted_business_unit?.map(
       (item) => ({
         label: item?.master_business_unit?.business_unit_name,
@@ -54,6 +113,7 @@ export const userLogin = async (req: Request<{}, {}, IUser>, res: Response) => {
         },
         employeeInformation: employee,
         permittedBusinessUnitDDL,
+        token,
       })
       .end();
   } catch (error: Error | any) {

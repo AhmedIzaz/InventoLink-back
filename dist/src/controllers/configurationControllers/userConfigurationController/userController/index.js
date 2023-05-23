@@ -23,10 +23,43 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.get_user_permitted_business_unit_menu = exports.userLogin = void 0;
+exports.get_user_permitted_business_unit_menu = exports.user_login = exports.user_signup = void 0;
 const index_1 = require("../../../../index");
 const bcrypt_1 = __importDefault(require("bcrypt"));
-const userLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const user_signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { email, password: givenPassword, username, account_id, user_type_id, } = req.body;
+        if (!email || !givenPassword || !username)
+            return res
+                .status(400)
+                .json({ message: "email, password or name is missing" })
+                .end();
+        const user_exist = yield index_1.globalPrisma.user.findUnique({
+            where: {
+                email,
+            },
+        });
+        if (user_exist)
+            return res.status(400).json({ message: "user already exist" }).end();
+        const encryptedPassword = yield bcrypt_1.default.hash(givenPassword, 10);
+        yield index_1.globalPrisma.user.create({
+            data: {
+                email,
+                password: encryptedPassword,
+                username,
+                account_id,
+                user_type_id,
+            },
+        });
+        return res.status(200).json({ message: "User created successfully" }).end();
+    }
+    catch (error) {
+        return res.status(500).json({ message: error.message }).end();
+    }
+});
+exports.user_signup = user_signup;
+const user_login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
         const { email: givenEmail, password: givenPassword } = req.body;
@@ -44,6 +77,7 @@ const userLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 email: true,
                 password: true,
                 employee: true,
+                username: true,
                 user_permitted_business_unit: {
                     select: {
                         master_business_unit: {
@@ -61,8 +95,16 @@ const userLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const passwordMatched = yield bcrypt_1.default.compare(givenPassword, user.password);
         if (!passwordMatched)
             return res.status(400).json({ message: "password is incorrect" }).end();
-        const { password, id, email } = user, userInfoWithoutPassword = __rest(user, ["password", "id", "email"]);
+        const { password, id, email, username } = user, userInfoWithoutPassword = __rest(user, ["password", "id", "email", "username"]);
         const { employee } = userInfoWithoutPassword;
+        const token = jsonwebtoken_1.default.sign({
+            userId: id,
+            employeeId: employee === null || employee === void 0 ? void 0 : employee.id,
+            userName: username,
+            employeeName: employee === null || employee === void 0 ? void 0 : employee.employee_name,
+        }, process.env.JWT_SECRET_KEY || "secret key", {
+            expiresIn: "1 days",
+        });
         const permittedBusinessUnitDDL = (_a = user === null || user === void 0 ? void 0 : user.user_permitted_business_unit) === null || _a === void 0 ? void 0 : _a.map((item) => {
             var _a, _b;
             return ({
@@ -80,6 +122,7 @@ const userLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             },
             employeeInformation: employee,
             permittedBusinessUnitDDL,
+            token,
         })
             .end();
     }
@@ -87,7 +130,7 @@ const userLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return res.status(500).json({ message: error.message }).end();
     }
 });
-exports.userLogin = userLogin;
+exports.user_login = user_login;
 const get_user_permitted_business_unit_menu = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { user_id, business_unit_id } = req.query;
     try {
