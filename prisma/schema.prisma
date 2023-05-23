@@ -56,6 +56,8 @@ model master_account {
   designation                  designation[]
   user_permitted_business_unit user_permitted_business_unit[]
   user_permitted_menu          user_permitted_menu[]
+  master_item_category         master_item_category[]
+  master_item                  master_item[]
 }
 
 model master_business_unit {
@@ -72,6 +74,8 @@ model master_business_unit {
   designation                  designation[]
   user_permitted_business_unit user_permitted_business_unit[]
   user_permitted_menu          user_permitted_menu[]
+  master_item_category         master_item_category[]
+  master_item                  master_item[]
 }
 
 model workplace {
@@ -85,6 +89,52 @@ model workplace {
   master_business_unit master_business_unit? @relation(references: [id], fields: [business_unit_id])
   is_active            Boolean               @default(true)
   employee             employee[]
+}
+
+model master_unit_of_measurement {
+  id                       Int           @id @default(autoincrement())
+  unit_of_measurement_name String        @db.VarChar(100)
+  description              String?
+  is_active                Boolean       @default(true)
+  master_item              master_item[]
+}
+
+model master_currency {
+  id            Int           @id @default(autoincrement())
+  currency_name String        @db.VarChar(100)
+  description   String?
+  is_active     Boolean       @default(true)
+  master_item   master_item[]
+}
+
+model master_item_category {
+  id                   Int                   @id @default(autoincrement())
+  item_category_name   String                @db.VarChar(100)
+  description          String?
+  account_id           Int?
+  master_account       master_account?       @relation(references: [id], fields: [account_id])
+  business_unit_id     Int?
+  master_business_unit master_business_unit? @relation(references: [id], fields: [business_unit_id])
+  is_active            Boolean               @default(true)
+  master_item          master_item[]
+}
+
+model master_item {
+  id                         Int                         @id @default(autoincrement())
+  item_name                  String                      @db.VarChar(100)
+  base_price                 Float
+  base_price_currency_id     Int?
+  master_currency            master_currency?            @relation(references: [id], fields: [base_price_currency_id])
+  description                String?
+  account_id                 Int?
+  master_account             master_account?             @relation(references: [id], fields: [account_id])
+  business_unit_id           Int?
+  master_business_unit       master_business_unit?       @relation(references: [id], fields: [business_unit_id])
+  is_active                  Boolean                     @default(true)
+  category_id                Int?
+  master_item_category       master_item_category?       @relation(references: [id], fields: [category_id])
+  unit_of_measurement_id     Int?
+  master_unit_of_measurement master_unit_of_measurement? @relation(references: [id], fields: [unit_of_measurement_id])
 }
 
 model department {
