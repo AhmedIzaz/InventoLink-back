@@ -3,7 +3,7 @@ import { IUser } from "../../../../../interfaces/configurationInterfaces";
 import { globalPrisma } from "../../../../index";
 import bcrypt from "bcrypt";
 import { user } from "@prisma/client";
-
+import jsonwebtoken from "jsonwebtoken";
 export const user_signup = async (
   req: Request<{}, {}, user>,
   res: Response
@@ -65,6 +65,7 @@ export const user_login = async (
         email: true,
         password: true,
         employee: true,
+        username: true,
         user_permitted_business_unit: {
           select: {
             master_business_unit: {
@@ -82,8 +83,20 @@ export const user_login = async (
     if (!passwordMatched)
       return res.status(400).json({ message: "password is incorrect" }).end();
 
-    const { password, id, email, ...userInfoWithoutPassword } = user;
+    const { password, id, email, username, ...userInfoWithoutPassword } = user;
     const { employee } = userInfoWithoutPassword;
+    const token = jsonwebtoken.sign(
+      {
+        userId: id,
+        employeeId: employee?.id,
+        userName: username,
+        employeeName: employee?.employee_name,
+      },
+      process.env.JWT_SECRET_KEY || "secret key",
+      {
+        expiresIn: "1 days",
+      }
+    );
     const permittedBusinessUnitDDL = user?.user_permitted_business_unit?.map(
       (item) => ({
         label: item?.master_business_unit?.business_unit_name,
@@ -100,6 +113,7 @@ export const user_login = async (
         },
         employeeInformation: employee,
         permittedBusinessUnitDDL,
+        token,
       })
       .end();
   } catch (error: Error | any) {
