@@ -94,7 +94,7 @@ export const user_login = async (
       },
       process.env.JWT_SECRET_KEY || "secret key",
       {
-        expiresIn: "1 days",
+        expiresIn: "2 days",
       }
     );
     const permittedBusinessUnitDDL = user?.user_permitted_business_unit?.map(

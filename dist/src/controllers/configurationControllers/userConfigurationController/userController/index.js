@@ -103,7 +103,7 @@ const user_login = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             userName: username,
             employeeName: employee === null || employee === void 0 ? void 0 : employee.employee_name,
         }, process.env.JWT_SECRET_KEY || "secret key", {
-            expiresIn: "1 days",
+            expiresIn: "2 days",
         });
         const permittedBusinessUnitDDL = (_a = user === null || user === void 0 ? void 0 : user.user_permitted_business_unit) === null || _a === void 0 ? void 0 : _a.map((item) => {
             var _a, _b;
