@@ -64,7 +64,47 @@ export const user_login = async (
         id: true,
         email: true,
         password: true,
-        employee: true,
+        employee: {
+          select: {
+            id: true,
+            employee_name: true,
+            employee_code: true,
+            mobile_number: true,
+            official_email: true,
+            personal_email: true,
+            profile_picture_id: true,
+            department: {
+              select: {
+                id: true,
+                department_name: true,
+              },
+            },
+            designation: {
+              select: {
+                id: true,
+                designation_name: true,
+              },
+            },
+            workplace: {
+              select: {
+                id: true,
+                workplace_name: true,
+              },
+            },
+            master_account: {
+              select: {
+                id: true,
+                account_name: true,
+              },
+            },
+            master_business_unit: {
+              select: {
+                id: true,
+                business_unit_name: true,
+              },
+            },
+          },
+        },
         username: true,
         user_permitted_business_unit: {
           select: {
