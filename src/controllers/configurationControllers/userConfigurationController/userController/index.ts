@@ -185,13 +185,47 @@ export const get_user_permitted_business_unit_menu = async (
               is_third_level: true,
               path: true,
               has_sub_menu: true,
+              is_active: true,
             },
           },
         },
       }
     );
     const formattedMenu = user_permitted_menu.map((item) => item.menu);
-    return res.status(200).json(formattedMenu).end();
+    const parentMenuList = formattedMenu?.filter(
+      (item) => item?.is_first_level && item?.is_active
+    );
+    if (parentMenuList?.length < 1) {
+      return res.status(404).json({ message: "No menu found" }).end();
+    }
+    const formattedMenuWithSecondLevelMenu = parentMenuList?.map((item) => {
+      return {
+        ...item,
+        second_level_menu: formattedMenu?.filter(
+          (nestedItem) =>
+            nestedItem?.is_second_level &&
+            nestedItem?.parent_menu_id === item?.id &&
+            item?.has_sub_menu &&
+            nestedItem?.is_active
+        ),
+      };
+    });
+    const formattedWithThirdLevelMenu = formattedMenuWithSecondLevelMenu?.map(
+      (item) => ({
+        ...item,
+        second_level_menu: item?.second_level_menu?.map((nestedItem) => ({
+          ...nestedItem,
+          third_level_menu: formattedMenu?.filter(
+            (multiNested) =>
+              multiNested?.parent_menu_id === nestedItem?.id &&
+              multiNested?.is_third_level &&
+              multiNested?.is_active
+          ),
+        })),
+      })
+    );
+
+    return res.status(200).json(formattedWithThirdLevelMenu).end();
   } catch (error: Error | any) {
     return res.status(500).json({ message: error.message }).end();
   }
