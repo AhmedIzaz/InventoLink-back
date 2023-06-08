@@ -76,7 +76,47 @@ const user_login = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 id: true,
                 email: true,
                 password: true,
-                employee: true,
+                employee: {
+                    select: {
+                        id: true,
+                        employee_name: true,
+                        employee_code: true,
+                        mobile_number: true,
+                        official_email: true,
+                        personal_email: true,
+                        profile_picture_id: true,
+                        department: {
+                            select: {
+                                id: true,
+                                department_name: true,
+                            },
+                        },
+                        designation: {
+                            select: {
+                                id: true,
+                                designation_name: true,
+                            },
+                        },
+                        workplace: {
+                            select: {
+                                id: true,
+                                workplace_name: true,
+                            },
+                        },
+                        master_account: {
+                            select: {
+                                id: true,
+                                account_name: true,
+                            },
+                        },
+                        master_business_unit: {
+                            select: {
+                                id: true,
+                                business_unit_name: true,
+                            },
+                        },
+                    },
+                },
                 username: true,
                 user_permitted_business_unit: {
                     select: {
@@ -151,12 +191,29 @@ const get_user_permitted_business_unit_menu = (req, res) => __awaiter(void 0, vo
                         is_third_level: true,
                         path: true,
                         has_sub_menu: true,
+                        is_active: true,
                     },
                 },
             },
         });
         const formattedMenu = user_permitted_menu.map((item) => item.menu);
-        return res.status(200).json(formattedMenu).end();
+        const parentMenuList = formattedMenu === null || formattedMenu === void 0 ? void 0 : formattedMenu.filter((item) => (item === null || item === void 0 ? void 0 : item.is_first_level) && (item === null || item === void 0 ? void 0 : item.is_active));
+        if ((parentMenuList === null || parentMenuList === void 0 ? void 0 : parentMenuList.length) < 1) {
+            return res.status(404).json({ message: "No menu found" }).end();
+        }
+        const formattedMenuWithSecondLevelMenu = parentMenuList === null || parentMenuList === void 0 ? void 0 : parentMenuList.map((item) => {
+            return Object.assign(Object.assign({}, item), { second_level_menu: formattedMenu === null || formattedMenu === void 0 ? void 0 : formattedMenu.filter((nestedItem) => (nestedItem === null || nestedItem === void 0 ? void 0 : nestedItem.is_second_level) &&
+                    (nestedItem === null || nestedItem === void 0 ? void 0 : nestedItem.parent_menu_id) === (item === null || item === void 0 ? void 0 : item.id) &&
+                    (item === null || item === void 0 ? void 0 : item.has_sub_menu) &&
+                    (nestedItem === null || nestedItem === void 0 ? void 0 : nestedItem.is_active)) });
+        });
+        const formattedWithThirdLevelMenu = formattedMenuWithSecondLevelMenu === null || formattedMenuWithSecondLevelMenu === void 0 ? void 0 : formattedMenuWithSecondLevelMenu.map((item) => {
+            var _a;
+            return (Object.assign(Object.assign({}, item), { second_level_menu: (_a = item === null || item === void 0 ? void 0 : item.second_level_menu) === null || _a === void 0 ? void 0 : _a.map((nestedItem) => (Object.assign(Object.assign({}, nestedItem), { third_level_menu: formattedMenu === null || formattedMenu === void 0 ? void 0 : formattedMenu.filter((multiNested) => (multiNested === null || multiNested === void 0 ? void 0 : multiNested.parent_menu_id) === (nestedItem === null || nestedItem === void 0 ? void 0 : nestedItem.id) &&
+                        (multiNested === null || multiNested === void 0 ? void 0 : multiNested.is_third_level) &&
+                        (multiNested === null || multiNested === void 0 ? void 0 : multiNested.is_active)) }))) }));
+        });
+        return res.status(200).json(formattedWithThirdLevelMenu).end();
     }
     catch (error) {
         return res.status(500).json({ message: error.message }).end();
