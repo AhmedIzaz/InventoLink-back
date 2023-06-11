@@ -191,7 +191,10 @@ export const get_user_permitted_business_unit_menu = async (
         },
       }
     );
-    const formattedMenu = user_permitted_menu.map((item) => item.menu);
+    const formattedMenu = user_permitted_menu.map((item) => ({
+      ...item.menu,
+      type: "group",
+    }));
     const parentMenuList = formattedMenu?.filter(
       (item) => item?.is_first_level && item?.is_active
     );
@@ -200,8 +203,12 @@ export const get_user_permitted_business_unit_menu = async (
     }
     const formattedMenuWithSecondLevelMenu = parentMenuList?.map((item) => {
       return {
-        ...item,
-        second_level_menu: formattedMenu?.filter(
+        id: item?.id,
+        title: item?.title,
+        label: item?.label,
+        key: `${item?.id}`,
+        path: item?.path,
+        children: formattedMenu?.filter(
           (nestedItem) =>
             nestedItem?.is_second_level &&
             nestedItem?.parent_menu_id === item?.id &&
@@ -213,14 +220,26 @@ export const get_user_permitted_business_unit_menu = async (
     const formattedWithThirdLevelMenu = formattedMenuWithSecondLevelMenu?.map(
       (item) => ({
         ...item,
-        second_level_menu: item?.second_level_menu?.map((nestedItem) => ({
-          ...nestedItem,
-          third_level_menu: formattedMenu?.filter(
-            (multiNested) =>
-              multiNested?.parent_menu_id === nestedItem?.id &&
-              multiNested?.is_third_level &&
-              multiNested?.is_active
-          ),
+        children: item?.children?.map((nestedItem) => ({
+          id: nestedItem?.id,
+          title: nestedItem?.title,
+          label: nestedItem?.label,
+          key: `${nestedItem?.id}`,
+          path: nestedItem?.path,
+          children: formattedMenu
+            ?.filter(
+              (multiNested) =>
+                multiNested?.parent_menu_id === nestedItem?.id &&
+                multiNested?.is_third_level &&
+                multiNested?.is_active
+            )
+            .map((multiNestedItem) => ({
+              id: multiNestedItem?.id,
+              title: multiNestedItem?.title,
+              label: multiNestedItem?.label,
+              key: `${multiNestedItem?.id}`,
+              path: multiNestedItem?.path,
+            })),
         })),
       })
     );
