@@ -196,22 +196,42 @@ const get_user_permitted_business_unit_menu = (req, res) => __awaiter(void 0, vo
                 },
             },
         });
-        const formattedMenu = user_permitted_menu.map((item) => item.menu);
+        const formattedMenu = user_permitted_menu.map((item) => (Object.assign(Object.assign({}, item.menu), { type: "group" })));
         const parentMenuList = formattedMenu === null || formattedMenu === void 0 ? void 0 : formattedMenu.filter((item) => (item === null || item === void 0 ? void 0 : item.is_first_level) && (item === null || item === void 0 ? void 0 : item.is_active));
         if ((parentMenuList === null || parentMenuList === void 0 ? void 0 : parentMenuList.length) < 1) {
             return res.status(404).json({ message: "No menu found" }).end();
         }
         const formattedMenuWithSecondLevelMenu = parentMenuList === null || parentMenuList === void 0 ? void 0 : parentMenuList.map((item) => {
-            return Object.assign(Object.assign({}, item), { second_level_menu: formattedMenu === null || formattedMenu === void 0 ? void 0 : formattedMenu.filter((nestedItem) => (nestedItem === null || nestedItem === void 0 ? void 0 : nestedItem.is_second_level) &&
+            return {
+                id: item === null || item === void 0 ? void 0 : item.id,
+                title: item === null || item === void 0 ? void 0 : item.title,
+                label: item === null || item === void 0 ? void 0 : item.label,
+                key: `${item === null || item === void 0 ? void 0 : item.id}`,
+                path: item === null || item === void 0 ? void 0 : item.path,
+                children: formattedMenu === null || formattedMenu === void 0 ? void 0 : formattedMenu.filter((nestedItem) => (nestedItem === null || nestedItem === void 0 ? void 0 : nestedItem.is_second_level) &&
                     (nestedItem === null || nestedItem === void 0 ? void 0 : nestedItem.parent_menu_id) === (item === null || item === void 0 ? void 0 : item.id) &&
                     (item === null || item === void 0 ? void 0 : item.has_sub_menu) &&
-                    (nestedItem === null || nestedItem === void 0 ? void 0 : nestedItem.is_active)) });
+                    (nestedItem === null || nestedItem === void 0 ? void 0 : nestedItem.is_active)),
+            };
         });
         const formattedWithThirdLevelMenu = formattedMenuWithSecondLevelMenu === null || formattedMenuWithSecondLevelMenu === void 0 ? void 0 : formattedMenuWithSecondLevelMenu.map((item) => {
             var _a;
-            return (Object.assign(Object.assign({}, item), { second_level_menu: (_a = item === null || item === void 0 ? void 0 : item.second_level_menu) === null || _a === void 0 ? void 0 : _a.map((nestedItem) => (Object.assign(Object.assign({}, nestedItem), { third_level_menu: formattedMenu === null || formattedMenu === void 0 ? void 0 : formattedMenu.filter((multiNested) => (multiNested === null || multiNested === void 0 ? void 0 : multiNested.parent_menu_id) === (nestedItem === null || nestedItem === void 0 ? void 0 : nestedItem.id) &&
+            return (Object.assign(Object.assign({}, item), { children: (_a = item === null || item === void 0 ? void 0 : item.children) === null || _a === void 0 ? void 0 : _a.map((nestedItem) => ({
+                    id: nestedItem === null || nestedItem === void 0 ? void 0 : nestedItem.id,
+                    title: nestedItem === null || nestedItem === void 0 ? void 0 : nestedItem.title,
+                    label: nestedItem === null || nestedItem === void 0 ? void 0 : nestedItem.label,
+                    key: `${nestedItem === null || nestedItem === void 0 ? void 0 : nestedItem.id}`,
+                    path: nestedItem === null || nestedItem === void 0 ? void 0 : nestedItem.path,
+                    children: formattedMenu === null || formattedMenu === void 0 ? void 0 : formattedMenu.filter((multiNested) => (multiNested === null || multiNested === void 0 ? void 0 : multiNested.parent_menu_id) === (nestedItem === null || nestedItem === void 0 ? void 0 : nestedItem.id) &&
                         (multiNested === null || multiNested === void 0 ? void 0 : multiNested.is_third_level) &&
-                        (multiNested === null || multiNested === void 0 ? void 0 : multiNested.is_active)) }))) }));
+                        (multiNested === null || multiNested === void 0 ? void 0 : multiNested.is_active)).map((multiNestedItem) => ({
+                        id: multiNestedItem === null || multiNestedItem === void 0 ? void 0 : multiNestedItem.id,
+                        title: multiNestedItem === null || multiNestedItem === void 0 ? void 0 : multiNestedItem.title,
+                        label: multiNestedItem === null || multiNestedItem === void 0 ? void 0 : multiNestedItem.label,
+                        key: `${multiNestedItem === null || multiNestedItem === void 0 ? void 0 : multiNestedItem.id}`,
+                        path: multiNestedItem === null || multiNestedItem === void 0 ? void 0 : multiNestedItem.path,
+                    })),
+                })) }));
         });
         return res.status(200).json(formattedWithThirdLevelMenu).end();
     }
