@@ -15,7 +15,7 @@ router.post("/login", not_authorized, user_login);
 router.post("/signup", not_authorized, user_signup);
 router.get(
   "/user-permitted-menu",
-  is_authorized,
+  // is_authorized,
   get_user_permitted_business_unit_menu
 );
 export default router;
