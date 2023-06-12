@@ -68,6 +68,8 @@ model master_business_unit {
   master_account               master_account?                @relation(references: [id], fields: [account_id])
   menu_table                   menu_table[]
   is_active                    Boolean                        @default(true)
+  base_currency_id             Int?
+  master_currency              master_currency?               @relation(references: [id], fields: [base_currency_id])
   employee                     employee[]
   workplace                    workplace[]
   department                   department[]
@@ -100,11 +102,12 @@ model master_unit_of_measurement {
 }
 
 model master_currency {
-  id            Int           @id @default(autoincrement())
-  currency_name String        @db.VarChar(100)
-  description   String?
-  is_active     Boolean       @default(true)
-  master_item   master_item[]
+  id                   Int                    @id @default(autoincrement())
+  currency_name        String                 @db.VarChar(100)
+  description          String?
+  is_active            Boolean                @default(true)
+  master_item          master_item[]
+  master_business_unit master_business_unit[]
 }
 
 model master_item_category {
