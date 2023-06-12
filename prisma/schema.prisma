@@ -70,6 +70,7 @@ model master_business_unit {
   is_active                    Boolean                        @default(true)
   base_currency_id             Int?
   master_currency              master_currency?               @relation(references: [id], fields: [base_currency_id])
+  language                     String?
   employee                     employee[]
   workplace                    workplace[]
   department                   department[]
