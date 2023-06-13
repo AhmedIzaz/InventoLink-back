@@ -9,7 +9,5 @@ const authMiddlewares_1 = require("../../middlewares/authMiddlewares");
 const router = express_1.default.Router();
 router.post("/login", authMiddlewares_1.not_authorized, userController_1.user_login);
 router.post("/signup", authMiddlewares_1.not_authorized, userController_1.user_signup);
-router.get("/user-permitted-menu", 
-// is_authorized,
-userController_1.get_user_permitted_business_unit_menu);
+router.get("/user-permitted-menu", authMiddlewares_1.is_authorized, userController_1.get_user_permitted_business_unit_menu);
 exports.default = router;
