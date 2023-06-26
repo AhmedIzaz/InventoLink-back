@@ -10,6 +10,6 @@ exports.is_authorized = is_authorized;
 const not_authorized = (req, res, next) => {
     if (!req.headers.authorization)
         return next();
-    return res.status(401).json({ message: "Unauthorized" }).end();
+    return res.status(400).json({ message: "Already authorized!" }).end();
 };
 exports.not_authorized = not_authorized;
