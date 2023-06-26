@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const authMiddlewares_1 = require("../../middlewares/authMiddlewares");
-const currencyControllers_1 = require("../../controllers/configurationControllers/basicConfigurationControllers/currencyControllers");
+const businessUnitControllers_1 = require("../../controllers/configurationControllers/basicConfigurationControllers/businessUnitControllers");
 const router = express_1.default.Router();
-router.get("/get-all-currencies-ddl", authMiddlewares_1.is_authorized, currencyControllers_1.get_all_currencies_ddl);
+router.post("/create-business-unit", authMiddlewares_1.is_authorized, businessUnitControllers_1.create_business_unit);
 exports.default = router;

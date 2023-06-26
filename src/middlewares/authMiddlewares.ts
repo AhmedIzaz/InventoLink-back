@@ -15,5 +15,5 @@ export const not_authorized = (
   next: NextFunction
 ) => {
   if (!req.headers.authorization) return next();
-  return res.status(401).json({ message: "Unauthorized" }).end();
+  return res.status(400).json({ message: "Already authorized!" }).end();
 };
