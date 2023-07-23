@@ -21,6 +21,7 @@ export const create_business_unit = async (req: Request, res: Response) => {
         account_id: req.body.account_id,
         base_currency_id: req.body.baseCurrency?.value,
         language: req.body.language,
+        created_by: req.body.created_by,
       },
     });
     return res
