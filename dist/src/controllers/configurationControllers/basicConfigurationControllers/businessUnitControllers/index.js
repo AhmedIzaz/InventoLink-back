@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.create_business_unit = void 0;
+exports.get_business_unit_landing = exports.create_business_unit = void 0;
 const __1 = require("../../../..");
 const create_business_unit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
@@ -44,3 +44,12 @@ const create_business_unit = (req, res) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.create_business_unit = create_business_unit;
+const get_business_unit_landing = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: error.message }).end();
+    }
+});
+exports.get_business_unit_landing = get_business_unit_landing;
