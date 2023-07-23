@@ -47,6 +47,12 @@ const create_business_unit = (req, res) => __awaiter(void 0, void 0, void 0, fun
 exports.create_business_unit = create_business_unit;
 const get_business_unit_landing = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const business_unit_landing = yield __1.globalPrisma.master_business_unit.findMany({
+            where: {
+                account_id: req.body.account_id,
+            },
+        });
+        return res.status(200).json({ business_unit_landing }).end();
     }
     catch (error) {
         console.log(error);
