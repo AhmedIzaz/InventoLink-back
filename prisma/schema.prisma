@@ -65,6 +65,8 @@ model master_business_unit {
   business_unit_name           String
   description                  String?
   account_id                   Int
+  created_by                   Int
+  user                         user                           @relation(references: [id], fields: created_by)
   master_account               master_account?                @relation(references: [id], fields: [account_id])
   menu_table                   menu_table[]
   is_active                    Boolean                        @default(true)
@@ -178,6 +180,7 @@ model user {
   is_active                    Boolean                        @default(true)
   user_permitted_business_unit user_permitted_business_unit[]
   user_permitted_menu          user_permitted_menu[]
+  master_business_unit         master_business_unit[]
 }
 
 model user_permitted_business_unit {
