@@ -31,6 +31,7 @@ const create_business_unit = (req, res) => __awaiter(void 0, void 0, void 0, fun
                 account_id: req.body.account_id,
                 base_currency_id: (_a = req.body.baseCurrency) === null || _a === void 0 ? void 0 : _a.value,
                 language: req.body.language,
+                created_by: req.body.created_by,
             },
         });
         return res
