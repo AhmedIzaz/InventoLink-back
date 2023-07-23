@@ -39,6 +39,13 @@ export const get_business_unit_landing = async (
   res: Response
 ) => {
   try {
+    const business_unit_landing =
+      await globalPrisma.master_business_unit.findMany({
+        where: {
+          account_id: req.body.account_id,
+        },
+      });
+    return res.status(200).json({ business_unit_landing }).end();
   } catch (error: Error | any) {
     console.log(error);
     return res.status(500).json({ message: error.message }).end();
