@@ -1,4 +1,4 @@
-import express, { NextFunction, Request, Response } from "express";
+import express from "express";
 const app = express();
 import mainRoutes from "./routers/index";
 import { PrismaClient } from "@prisma/client";
