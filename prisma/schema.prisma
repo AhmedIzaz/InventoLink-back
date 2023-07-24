@@ -63,7 +63,7 @@ model master_account {
 model master_business_unit {
   id                           Int                            @id @default(autoincrement())
   business_unit_name           String
-  description                  String?
+  address                      String?
   account_id                   Int
   created_by                   Int
   user                         user                           @relation(references: [id], fields: created_by)
