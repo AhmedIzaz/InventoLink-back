@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.get_business_unit_landing = exports.create_business_unit = void 0;
+exports.get_business_unit_landing = exports.make_activity = exports.create_business_unit = void 0;
 const __1 = require("../../../..");
 const create_business_unit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
@@ -28,6 +28,7 @@ const create_business_unit = (req, res) => __awaiter(void 0, void 0, void 0, fun
         yield __1.globalPrisma.master_business_unit.create({
             data: {
                 business_unit_name: req.body.businessUnitName,
+                address: req.body.address,
                 account_id: req.body.account_id,
                 base_currency_id: (_a = req.body.baseCurrency) === null || _a === void 0 ? void 0 : _a.value,
                 language: req.body.language,
@@ -45,14 +46,49 @@ const create_business_unit = (req, res) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.create_business_unit = create_business_unit;
-const get_business_unit_landing = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const make_activity = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const business_unit_landing = yield __1.globalPrisma.master_business_unit.findMany({
+        const { business_unit_id, activity } = req.body;
+        yield __1.globalPrisma.master_business_unit.update({
             where: {
-                account_id: req.body.account_id,
+                id: business_unit_id,
+            },
+            data: {
+                is_active: activity,
             },
         });
-        return res.status(200).json({ business_unit_landing }).end();
+        return res
+            .json({
+            message: `Business unit is ${activity ? "activated" : "inactived"} successfully`,
+        })
+            .status(200)
+            .end();
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: error.message }).end();
+    }
+});
+exports.make_activity = make_activity;
+const get_business_unit_landing = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { account_id } = req.query;
+        const business_unit_landing = yield __1.globalPrisma.master_business_unit.findMany({
+            where: {
+                account_id: account_id ? parseInt(account_id) : 0,
+            },
+            include: {
+                master_currency: {
+                    select: {
+                        currency_name: true,
+                    },
+                },
+            },
+            orderBy: {
+                business_unit_name: "asc",
+            },
+        });
+        return res.status(200).json(business_unit_landing).end();
     }
     catch (error) {
         console.log(error);

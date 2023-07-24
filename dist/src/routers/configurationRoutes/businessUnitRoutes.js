@@ -9,4 +9,5 @@ const businessUnitControllers_1 = require("../../controllers/configurationContro
 const router = express_1.default.Router();
 router.post("/create-business-unit", authMiddlewares_1.is_authorized, businessUnitControllers_1.create_business_unit);
 router.get("/get-business-unit-landing", authMiddlewares_1.is_authorized, businessUnitControllers_1.get_business_unit_landing);
+router.post("/activity", authMiddlewares_1.is_authorized, businessUnitControllers_1.make_activity);
 exports.default = router;
