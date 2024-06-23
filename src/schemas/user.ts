@@ -5,21 +5,11 @@ const userSchema: TUserSchema = {
 		body: {
 			type: 'object',
 			properties: {
-				username: {
-					type: 'string',
-				},
-				email: {
-					type: 'string',
-				},
-				password: {
-					type: 'string',
-				},
-				contact: {
-					type: 'string',
-				},
-				user_type_id: {
-					type: 'number',
-				},
+				username: { type: 'string' },
+				email: { type: 'string' },
+				password: { type: 'string' },
+				contact: { type: 'string' },
+				user_type_id: { type: 'number' },
 			},
 			required: ['username', 'email', 'password', 'contact', 'user_type_id'],
 		},
