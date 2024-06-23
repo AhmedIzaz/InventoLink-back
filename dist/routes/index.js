@@ -13,7 +13,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const userRoute_1 = __importDefault(require("./userRoute"));
+const authenticationRoute_1 = __importDefault(require("./authenticationRoute"));
 const mainRoutes = (fastifyInstance) => __awaiter(void 0, void 0, void 0, function* () {
+    yield fastifyInstance.register(authenticationRoute_1.default, { prefix: '/auth' });
     yield fastifyInstance.register(userRoute_1.default, { prefix: '/user' });
 });
 exports.default = mainRoutes;

@@ -23,7 +23,6 @@ export const userCreate = async (request: FastifyRequest<{ Body: TUser }>, reply
 		})
 		return reply.code(200).send({ message: 'User created successfully' })
 	} catch (error: any) {
-		console.log(error)
 		return reply.code(400).send({ message: error.message })
 	}
 }
