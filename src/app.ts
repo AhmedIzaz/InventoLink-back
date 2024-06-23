@@ -3,8 +3,8 @@ import { PrismaClient } from '@prisma/client'
 import ajvErrors from 'ajv-errors'
 import fastify from 'fastify'
 // import routes
-// import mainRoute from './routes/index'
-// import mainMiddleware from './middlewares'
+import mainRoute from './routes'
+import mainMiddleware from './middlewares'
 
 export const globalPrisma = new PrismaClient()
 const fastifyInstance = fastify({
@@ -18,8 +18,8 @@ const fastifyInstance = fastify({
 })
 
 const appBuilder = async () => {
-	// await mainMiddleware(fastifyInstance)
-	// await fastifyInstance.register(mainRoute)
+	await mainMiddleware(fastifyInstance)
+	await fastifyInstance.register(mainRoute)
 	return fastifyInstance
 }
 

@@ -18,8 +18,8 @@ const client_1 = require("@prisma/client");
 const ajv_errors_1 = __importDefault(require("ajv-errors"));
 const fastify_1 = __importDefault(require("fastify"));
 // import routes
-// import mainRoute from './routes/index'
-// import mainMiddleware from './middlewares'
+const routes_1 = __importDefault(require("./routes"));
+const middlewares_1 = __importDefault(require("./middlewares"));
 exports.globalPrisma = new client_1.PrismaClient();
 const fastifyInstance = (0, fastify_1.default)({
     logger: true,
@@ -31,8 +31,8 @@ const fastifyInstance = (0, fastify_1.default)({
     },
 });
 const appBuilder = () => __awaiter(void 0, void 0, void 0, function* () {
-    // await mainMiddleware(fastifyInstance)
-    // await fastifyInstance.register(mainRoute)
+    yield (0, middlewares_1.default)(fastifyInstance);
+    yield fastifyInstance.register(routes_1.default);
     return fastifyInstance;
 });
 appBuilder()
