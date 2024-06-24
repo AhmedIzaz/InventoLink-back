@@ -7,13 +7,7 @@ const authRoute = async (fastifyInstance: FastifyInstance) => {
 	fastifyInstance.addHook('preHandler', notLoggedIn)
 
 	const { login } = authenticationSchema
-	fastifyInstance.post(
-		'/login',
-		{
-			schema: login,
-		},
-		loginController
-	)
+	fastifyInstance.post('/login', { schema: login }, loginController)
 }
 
 export default authRoute
