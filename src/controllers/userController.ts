@@ -2,10 +2,7 @@ import bcrypt from 'bcrypt'
 import { globalPrisma } from '../app'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
-export const userListController = async (
-	request: FastifyRequest<{ Body: TUser; Params?: { id: number } }>,
-	reply: FastifyReply
-) => {
+export const userListController = async (_: FastifyRequest, reply: FastifyReply) => {
 	try {
 		// user list without admin...
 		const userList = await globalPrisma.user.findMany({
