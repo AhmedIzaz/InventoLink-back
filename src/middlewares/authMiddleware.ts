@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken'
-import { FastifyReply, FastifyRequest } from 'fastify'
+// @ts-ignore
+import fastifyOauth2 from "@fastify/oauth2"
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 export const notLoggedIn = async (request: FastifyRequest, reply: FastifyReply) => {
 	let loggedIn = false
@@ -41,4 +43,22 @@ export const isAdminPermitted = async <Tb, Tq, Tp>(
 	reply: FastifyReply
 ) => {
 	if (request.user.user_type_id !== 1) return reply.code(400).send({ message: 'Admin permitted only' })
+}
+
+
+export const googleOauthMiddleware = async (fastify:FastifyInstance) => {
+	await fastify.register(fastifyOauth2, {
+		name: 'googleOAuth2',
+		scope: ['profile', 'email'],
+		credentials: {
+			auth: fastifyOauth2.GOOGLE_CONFIGURATION,
+			client: {
+				id: process.env.GOOGLE_CLIENT_ID!,
+				secret: process.env.GOOGLE_CLIENT_SECRET!,
+			},
+		},
+		startRedirectPath: '/auth/google',
+		callbackUri: process.env.GOOGLE_CALLBACK_URL!,
+	})
+ 
 }

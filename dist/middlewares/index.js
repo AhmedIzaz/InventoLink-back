@@ -13,10 +13,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const cors_1 = __importDefault(require("@fastify/cors"));
+const cookie_1 = __importDefault(require("@fastify/cookie"));
+const authMiddleware_1 = require("./authMiddleware");
 const mainMiddleware = (fastifyInstance) => __awaiter(void 0, void 0, void 0, function* () {
     yield fastifyInstance.register(cors_1.default, {
+        credentials: true,
         origin: 'http://localhost:3000',
         methods: ['GET', 'HEAD', 'OPTIONS', 'POST', 'PUT', 'DELETE'],
     });
+    yield fastifyInstance.register(cookie_1.default);
+    // oauth middlewares
+    yield (0, authMiddleware_1.googleOauthMiddleware)(fastifyInstance);
 });
 exports.default = mainMiddleware;

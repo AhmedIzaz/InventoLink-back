@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt'
+import axios from 'axios'
 import { globalPrisma } from '../app'
-import { FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import jwt from 'jsonwebtoken'
 
 export const loginController = async (request: FastifyRequest<{ Body: TLogin }>, reply: FastifyReply) => {
@@ -24,4 +25,31 @@ export const loginController = async (request: FastifyRequest<{ Body: TLogin }>,
 	} catch (error: any) {
 		return reply.code(400).send({ message: error.message })
 	}
+}
+
+export const googleOauthController = async (fastifyInstance: FastifyInstance) => {
+	fastifyInstance.get('/google/callback', async (request, reply) => {
+		try {
+			const token = await fastifyInstance.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(request)
+
+			// Request user info from Google API
+			const userInfoResponse = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+				headers: {
+					Authorization: `Bearer ${token.token.access_token}`,
+				},
+			})
+
+			const userInfo = userInfoResponse.data
+			return reply
+				.setCookie('user', JSON.stringify(userInfo), {
+					httpOnly: true,
+					secure: process.env.NODE_ENV === 'production', // Enable secure cookies in production
+					sameSite: 'lax',
+					path: '/',
+				})
+				.redirect('http://localhost:3000')
+		} catch (err: any) {
+			return reply.status(400).send({ message: err.message })
+		}
+	})
 }
