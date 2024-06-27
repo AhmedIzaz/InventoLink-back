@@ -21,18 +21,21 @@ export const userCreateUpdateController = async (
 ) => {
 	try {
 		const { id } = { ...(request.params ?? {}) }
-		const { username, email, password, contact, user_type_id } = request.body
+		const { username, email, password, contact, user_type_id, isOauthUser, oauthProvider } = request.body
 		const isCreate = request.method === 'POST'
 
 		const user = await globalPrisma.user.findFirst({ where: { email } })
 		if (user && (isCreate || user?.id !== id)) throw new Error(`User with this email already exists`)
 
-		const payload = { username, email, contact, user_type_id }
+		const payload: TUser = { username, email, contact, user_type_id, isOauthUser, oauthProvider }
 		// if create then only create else update
 		let message: string
 		if (isCreate) {
-			const encryptedPassword = await bcrypt.hash(password, +process.env.PASSWORD_SALT!)
-			await globalPrisma.user.create({ data: { ...payload, password: encryptedPassword } })
+			if (!isOauthUser && password) {
+				const encryptedPassword = await bcrypt.hash(password, +process.env.PASSWORD_SALT!)
+				payload.password = encryptedPassword
+			}
+			await globalPrisma.user.create({ data: payload })
 			message = 'User created successfully'
 		} else {
 			await globalPrisma.user.update({ where: { id }, data: payload })

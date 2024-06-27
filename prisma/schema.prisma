@@ -14,14 +14,22 @@ model user_type {
   user user[]
 }
 
+enum EOauthProvider {
+  GOOGLE
+  FACEBOOK
+  LINKEDIN
+}
+
 model user {
   id                    Int                     @id @default(autoincrement())
   username              String                  @db.VarChar(100)
   email                 String                  @unique @db.VarChar(100)
-  password              String                  @unique
-  contact               String                  @db.VarChar(200)
+  password              String?                 @unique
+  contact               String?                 @db.VarChar(200)
   user_type_id          Int
   userType              user_type               @relation(fields: [user_type_id], references: [id])
+  isOauthUser           Boolean                 @default(false)
+  oauthProvider         EOauthProvider?
   purchase_order_header purchase_order_header[]
   sales_order_header    sales_order_header[]
 }

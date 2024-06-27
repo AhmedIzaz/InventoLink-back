@@ -2,25 +2,22 @@ import bcrypt from 'bcrypt'
 import axios from 'axios'
 import { globalPrisma } from '../app'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import jwt from 'jsonwebtoken'
+import { cookieObj, generateToken } from '../utils'
 
 export const loginController = async (request: FastifyRequest<{ Body: TLogin }>, reply: FastifyReply) => {
 	try {
 		const { email, password } = request.body
 
 		// check user with this email exist or not
-		const userExist = await globalPrisma.user.findFirst({ where: { email } })
+		const userExist = await globalPrisma.user.findFirst({ where: { email, isOauthUser: false } })
 		if (!userExist) throw new Error(`User with this email doesn't exists`)
 
 		// check is password match or not
-		const passwordMatched = await bcrypt.compare(password, userExist?.password)
+		const passwordMatched = await bcrypt.compare(password, userExist?.password!)
 		if (!passwordMatched) throw new Error(`Password does not match`)
 
 		// create token validaity of 60 seconds
-		const { id, username, contact, user_type_id } = userExist
-		const token = jwt.sign({ id, username, contact, email, user_type_id }, process.env.JWT_SECRET_KEY!, {
-			expiresIn: 60,
-		})
+		const token = generateToken(userExist)
 		return reply.code(200).send({ message: 'User loggedin successfully', token, user: userExist })
 	} catch (error: any) {
 		return reply.code(400).send({ message: error.message })
@@ -30,26 +27,34 @@ export const loginController = async (request: FastifyRequest<{ Body: TLogin }>,
 export const googleOauthController = async (fastifyInstance: FastifyInstance) => {
 	fastifyInstance.get('/google/callback', async (request, reply) => {
 		try {
-			const token = await fastifyInstance.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(request)
+			const _token = await fastifyInstance.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(request)
 
 			// Request user info from Google API
 			const userInfoResponse = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
 				headers: {
-					Authorization: `Bearer ${token.token.access_token}`,
+					Authorization: `Bearer ${_token.token.access_token}`,
 				},
 			})
 
-			const userInfo = userInfoResponse.data
+			const userInfo: TGoogleUser = userInfoResponse.data
+			// check user with this email exist or not
+			const userExist = await globalPrisma.user.findFirst({
+				where: { email: userInfo.email, isOauthUser: true, oauthProvider: 'GOOGLE' },
+			})
+
+			if (!userExist) {
+				let message = 'No google user with this email exist in the system'
+				throw new Error(message)
+			}
+
+			const token = generateToken(userExist)
 			return reply
-				.setCookie('user', JSON.stringify(userInfo), {
-					httpOnly: true,
-					secure: process.env.NODE_ENV === 'production', // Enable secure cookies in production
-					sameSite: 'lax',
-					path: '/',
-				})
-				.redirect('http://localhost:3000')
+				.setCookie('token', JSON.stringify(token), cookieObj)
+				.redirect(process.env.CLIENT_LOGIN_URL! + `?token=${token}`)
 		} catch (err: any) {
-			return reply.status(400).send({ message: err.message })
+			return reply
+				.setCookie('token', '', cookieObj)
+				.redirect(process.env.CLIENT_LOGIN_URL! + `?message=${err.message}`)
 		}
 	})
 }

@@ -9,8 +9,26 @@ const userCreateSchema: FastifySchema = {
 			password: { type: 'string' },
 			contact: { type: 'string' },
 			user_type_id: { type: 'number' },
+			isOauthUser: { type: 'boolean' },
+			oauthProvider: { type: ['string', 'null'] },
 		},
-		required: ['username', 'email', 'password', 'contact', 'user_type_id'],
+		required: ['username', 'email', 'contact', 'user_type_id'],
+		if: {
+			properties: {
+				isOauthUser: { const: true },
+			},
+		},
+		then: {
+			properties: {
+				oauthProvider: { type: 'string' },
+			},
+			required: ['oauthProvider'],
+		},
+		else: {
+			properties: {
+				oauthProvider: { type: 'null' },
+			},
+		},
 	},
 }
 
