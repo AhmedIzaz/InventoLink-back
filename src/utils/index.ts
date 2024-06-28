@@ -14,8 +14,8 @@ export const generateToken = (user: TUser): string => {
 }
 
 export const cookieObj: CookieSerializeOptions = {
-	httpOnly: true,
-	secure: true,
+	httpOnly: false,
+	secure: false,
 	sameSite: 'lax',
 	path: '/',
 }

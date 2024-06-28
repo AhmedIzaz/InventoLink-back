@@ -48,13 +48,14 @@ export const googleOauthController = async (fastifyInstance: FastifyInstance) =>
 			}
 
 			const token = generateToken(userExist)
+			const responsePayload = { message: 'User loggedin successfully', token, user: userExist }
 			return reply
-				.setCookie('token', JSON.stringify(token), cookieObj)
-				.redirect(process.env.CLIENT_LOGIN_URL! + `?token=${token}`)
+				.setCookie(process.env.GOOGLE_CLIENT_COOKIE_KEY!, JSON.stringify(responsePayload), cookieObj)
+				.redirect(process.env.CLIENT_LOGIN_URL!)
 		} catch (err: any) {
 			return reply
-				.setCookie('token', '', cookieObj)
-				.redirect(process.env.CLIENT_LOGIN_URL! + `?message=${err.message}`)
+				.setCookie(process.env.GOOGLE_ACCOUNT_NOT_FOUND_KEY!, err.message, cookieObj)
+				.redirect(process.env.CLIENT_LOGIN_URL!)
 		}
 	})
 }
