@@ -15,34 +15,70 @@ export const userListController = async (_: FastifyRequest, reply: FastifyReply)
 	}
 }
 
-export const userCreateUpdateController = async (
+export const userCreateController = async (request: FastifyRequest<{ Body: TUser }>, reply: FastifyReply) => {
+	try {
+		const { username, email, password, contact, user_type_id, isOauthUser, oauthProvider } = request.body
+		const user = await globalPrisma.user.findFirst({ where: { email } })
+		if (user) {
+			throw new Error('User with this email already exists')
+		}
+		const payload: TUser = { username, email, contact, user_type_id, isOauthUser, oauthProvider }
+		if (!isOauthUser && password) {
+			const encryptedPassword = await bcrypt.hash(password, +process.env.PASSWORD_SALT!)
+			payload.password = encryptedPassword
+		}
+		await globalPrisma.user.create({ data: payload })
+		return reply.code(200).send({ message: 'User created successfully' })
+	} catch (error: any) {
+		return reply.code(400).send({ message: error.message })
+	}
+}
+
+export const userUpdateController = async (
 	request: FastifyRequest<{ Body: TUser; Params?: { id: number } }>,
 	reply: FastifyReply
 ) => {
 	try {
-		const { id } = { ...(request.params ?? {}) }
+		const { id } = request.params ?? {}
 		const { username, email, password, contact, user_type_id, isOauthUser, oauthProvider } = request.body
-		const isCreate = request.method === 'POST'
 
-		const user = await globalPrisma.user.findFirst({ where: { email } })
-		if (user && (isCreate || user?.id !== id)) throw new Error(`User with this email already exists`)
+		const [user, anotherUser] = await Promise.all([
+			globalPrisma.user.findFirst({ where: { id } }),
+			globalPrisma.user.findFirst({ where: { email } }),
+		])
 
-		const payload: TUser = { username, email, contact, user_type_id, isOauthUser, oauthProvider }
-		// if create then only create else update
-		let message: string
-		if (isCreate) {
-			if (!isOauthUser && password) {
-				const encryptedPassword = await bcrypt.hash(password, +process.env.PASSWORD_SALT!)
-				payload.password = encryptedPassword
-			}
-			await globalPrisma.user.create({ data: payload })
-			message = 'User created successfully'
-		} else {
-			await globalPrisma.user.update({ where: { id }, data: payload })
-			message = 'User updated successfully'
+		if (!user) {
+			throw new Error('User not found')
 		}
 
-		return reply.code(200).send({ message })
+		if (anotherUser && anotherUser?.id !== id) {
+			throw new Error('User with this email already exists')
+		}
+
+		const payload: TUser = { username, email, contact, user_type_id, isOauthUser, oauthProvider }
+		if (!isOauthUser && password) {
+			const encryptedPassword = await bcrypt.hash(password, +process.env.PASSWORD_SALT!)
+			payload.password = encryptedPassword
+		}
+
+		await globalPrisma.user.update({ where: { id }, data: payload })
+		return reply.code(200).send({ message: 'User updated successfully' })
+	} catch (error: any) {
+		return reply.code(400).send({ message: error.message })
+	}
+}
+
+export const userDeleteController = async (request: FastifyRequest<{ Params: { id: number } }>, reply: FastifyReply) => {
+	try {
+		const { id } = request.params
+		const user = await globalPrisma.user.findFirst({ where: { id: +id } })
+
+		if (!user) {
+			throw new Error('User not found')
+		}
+
+		await globalPrisma.user.delete({ where: { id: +id } })
+		return reply.code(200).send({ message: 'User deleted successfully' })
 	} catch (error: any) {
 		return reply.code(400).send({ message: error.message })
 	}

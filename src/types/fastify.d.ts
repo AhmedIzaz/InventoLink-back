@@ -7,6 +7,6 @@ declare module 'fastify' {
 	}
 
 	interface FastifyRequest {
-		user: TUser
+		user: TToken
 	}
 }

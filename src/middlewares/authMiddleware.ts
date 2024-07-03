@@ -1,5 +1,4 @@
 import jwt from 'jsonwebtoken'
-// @ts-ignore
 import fastifyOauth2 from '@fastify/oauth2'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
@@ -28,14 +27,38 @@ export const isLoggedIn = async (request: FastifyRequest, reply: FastifyReply) =
 		const data = jwt.verify(token, process.env.JWT_SECRET_KEY!, {
 			ignoreExpiration: false,
 		})
-		request.user = data as TUser
+		request.user = data as TToken
 	} catch (err: any) {
 		return reply.status(401).send({ message: err.message })
 	}
 }
 
 export const isAdminPermitted = async <Tb, Tq, Tp>(request: FastifyRequest<TFastifyRequestInit>, reply: FastifyReply) => {
-	if (request.user.user_type_id !== 1) return reply.code(400).send({ message: 'Admin permitted only' })
+	if (request?.user?.userType?.name !== 'ADMIN') return reply.code(400).send({ message: 'Admin permitted only' })
+}
+
+/// both admin and warehouse staff will be allowed
+export const isWarehouseStaffPermitted = async <Tb, Tq, Tp>(
+	request: FastifyRequest<TFastifyRequestInit>,
+	reply: FastifyReply
+) => {
+	const permittedUsers = ['WAREHOUSE_STAFF', 'ADMIN']
+	const usersType = request?.user?.userType?.name
+	if (!permittedUsers?.includes(usersType!)) {
+		return reply.code(400).send({ message: 'Warehouse staff permitted only' })
+	}
+}
+
+// both admin and sales staff will be allowed
+export const isSalesStaffPermitted = async <Tb, Tq, Tp>(
+	request: FastifyRequest<TFastifyRequestInit>,
+	reply: FastifyReply
+) => {
+	const permittedUsers = ['SALES_STAFF', 'ADMIN']
+	const usersType = request?.user?.userType?.name
+	if (!permittedUsers?.includes(usersType!)) {
+		return reply.code(400).send({ message: 'Sales staff permitted only' })
+	}
 }
 
 export const googleOauthMiddleware = async (fastify: FastifyInstance) => {

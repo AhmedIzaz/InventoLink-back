@@ -35,6 +35,7 @@ const userCreateSchema: FastifySchema = {
 const userSchema: TUserSchema = {
 	create: userCreateSchema,
 	update: { ...userCreateSchema, params: { type: 'object', properties: { id: { type: 'number' } } } },
+	
 }
 
 export default userSchema
