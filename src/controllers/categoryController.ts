@@ -56,9 +56,9 @@ export const categoryUpdateController = async (
 export const categoryDeleteController = async (request: FastifyRequest<{ Params: { id: number } }>, reply: FastifyReply) => {
 	try {
 		const { id } = request.params ?? {}
-		const user = await globalPrisma.category.findFirst({ where: { id: +id } })
+		const category = await globalPrisma.category.findFirst({ where: { id: +id } })
 
-		if (!user) {
+		if (!category) {
 			throw new Error('Category not found')
 		}
 

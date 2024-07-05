@@ -51,7 +51,7 @@ model category {
 
 model product {
   id                    Int                     @id @default(autoincrement())
-  name                  String                  @unique @db.VarChar(100)
+  name                  String                  @db.VarChar(100)
   description           String?                 @db.VarChar(200)
   price                 Float
   category_id           Int
