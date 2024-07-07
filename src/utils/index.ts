@@ -14,3 +14,8 @@ export const cookieObj: CookieSerializeOptions = {
 	sameSite: 'lax',
 	path: '/',
 }
+
+export const getPaginationFilter = (pageSize: number, current: number) => ({
+	skip: pageSize * (current - 1),
+	take: pageSize,
+})

@@ -9,10 +9,10 @@ import {
 import supplierSchema from '../schemas/supplier'
 
 const supplierRoute = async (fastifyInstance: FastifyInstance) => {
-	const { create, update } = supplierSchema
+	const { list, create, update } = supplierSchema
 
 	// supplier list
-	fastifyInstance.get('/list', supplierListController)
+	fastifyInstance.get('/list', { schema: list }, supplierListController)
 	// supplier create
 	fastifyInstance.post('/create', { schema: create, preHandler: [isAdminPermitted] }, supplierCreateController)
 	// supplier update
