@@ -1,18 +1,19 @@
 import { globalPrisma } from '../app'
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { getPaginationFilter } from '../utils'
+import { getCommonFilter } from '../utils'
 
 export const supplierListController = async (
 	request: FastifyRequest<{ Querystring: TCommonRequestFilter }>,
 	reply: FastifyReply
 ) => {
 	try {
-		const { pageSize, current, orderBy, orderField } = request?.query
+		const { pageSize, current, orderBy, orderField, search = '' } = request?.query
+
 		const [data, total] = await Promise.all([
 			globalPrisma.supplier.findMany({
-				...getPaginationFilter(pageSize, current),
-				orderBy: {
-					...(orderField ? { [orderField]: orderBy } : {}),
+				...getCommonFilter({ pageSize, current, orderBy, orderField }),
+				where: {
+					OR: [{ name: { contains: search } }, { email: { contains: search } }, { contact: { contains: search } }],
 				},
 			}),
 			globalPrisma.supplier.count(),

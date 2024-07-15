@@ -19,3 +19,12 @@ export const getPaginationFilter = (pageSize: number, current: number) => ({
 	skip: pageSize * (current - 1),
 	take: pageSize,
 })
+
+export const getCommonFilter = ({ pageSize, current, orderBy, orderField }: TCommonRequestFilter) => {
+	return {
+		...getPaginationFilter(pageSize, current),
+		orderBy: {
+			...(orderField ? { [orderField]: orderBy } : {}),
+		},
+	}
+}

@@ -1,10 +1,24 @@
 import { globalPrisma } from '../app'
 import { FastifyReply, FastifyRequest } from 'fastify'
+import { getCommonFilter } from '../utils'
 
-export const categoryListController = async (_: FastifyRequest, reply: FastifyReply) => {
+export const categoryListController = async (
+	request: FastifyRequest<{ Querystring: TCommonRequestFilter }>,
+	reply: FastifyReply
+) => {
 	try {
-		const data = await globalPrisma.category.findMany()
-		return reply.code(200).send({ data })
+		const { pageSize, current, orderBy, orderField, search = '' } = request?.query
+		const [data, total] = await Promise.all([
+			globalPrisma.category.findMany({
+				...getCommonFilter({ pageSize, current, orderBy, orderField }),
+				where: {
+					OR: [{ name: { contains: search } }],
+				},
+			}),
+			globalPrisma.category.count(),
+		])
+		const pageInfo = { pageSize, current, total }
+		return reply.code(200).send({ data, pageInfo })
 	} catch (err: any) {
 		return reply.code(400).send({ message: err.message })
 	}

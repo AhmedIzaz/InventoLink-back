@@ -12,6 +12,7 @@ type TCommonRequestFilter = {
 	// more work to do for order by..should common from frontend
 	orderBy?: TOrder
 	orderField?: string
+	search?: string
 }
 
 type TCommonResponseFilter = { total?: number; current?: number; pageSize?: number }
