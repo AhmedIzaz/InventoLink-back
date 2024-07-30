@@ -8,17 +8,16 @@ export const supplierListController = async (
 ) => {
 	try {
 		const { pageSize, current, orderBy, orderField, search = '' } = request?.query
-
+		const args = {
+			...getCommonFilter({ pageSize, current, orderBy, orderField }),
+			where: {
+				OR: [{ name: { contains: search } }, { email: { contains: search } }, { contact: { contains: search } }],
+			},
+		}
 		const [data, total] = await Promise.all([
-			globalPrisma.supplier.findMany({
-				...getCommonFilter({ pageSize, current, orderBy, orderField }),
-				where: {
-					OR: [{ name: { contains: search } }, { email: { contains: search } }, { contact: { contains: search } }],
-				},
-			}),
-			globalPrisma.supplier.count(),
+			globalPrisma.supplier.findMany(args),
+			globalPrisma.supplier.count({ where: args.where }),
 		])
-
 		const pageInfo = { pageSize, current, total }
 		return reply.code(200).send({ data, pageInfo })
 	} catch (err: any) {

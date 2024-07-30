@@ -1,4 +1,5 @@
 import { FastifySchema } from 'fastify'
+import { commonRequestFilter } from '.'
 
 const categoryCreateSchema: FastifySchema = {
 	body: {
@@ -12,6 +13,7 @@ const categoryCreateSchema: FastifySchema = {
 }
 
 const categorySchema: TCategorySchema = {
+	list: commonRequestFilter,
 	create: categoryCreateSchema,
 	update: { ...categoryCreateSchema, params: { type: 'object', properties: { id: { type: 'number' } } } },
 }
@@ -19,6 +21,7 @@ const categorySchema: TCategorySchema = {
 export default categorySchema
 
 type TCategorySchema = {
+	list: FastifySchema
 	create: FastifySchema
 	update: FastifySchema
 }

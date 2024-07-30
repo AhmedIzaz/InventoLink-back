@@ -8,14 +8,13 @@ export const categoryListController = async (
 ) => {
 	try {
 		const { pageSize, current, orderBy, orderField, search = '' } = request?.query
+		const args = {
+			...getCommonFilter({ pageSize, current, orderBy, orderField }),
+			where: { name: { contains: search } },
+		}
 		const [data, total] = await Promise.all([
-			globalPrisma.category.findMany({
-				...getCommonFilter({ pageSize, current, orderBy, orderField }),
-				where: {
-					OR: [{ name: { contains: search } }],
-				},
-			}),
-			globalPrisma.category.count(),
+			globalPrisma.category.findMany(args),
+			globalPrisma.category.count({ where: args.where }),
 		])
 		const pageInfo = { pageSize, current, total }
 		return reply.code(200).send({ data, pageInfo })

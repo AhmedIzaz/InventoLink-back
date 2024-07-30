@@ -1,15 +1,31 @@
 import bcrypt from 'bcrypt'
 import { globalPrisma } from '../app'
 import { FastifyReply, FastifyRequest } from 'fastify'
+import { getCommonFilter } from '../utils'
 
-export const userListController = async (_: FastifyRequest, reply: FastifyReply) => {
+export const userListController = async (
+	request: FastifyRequest<{ Querystring: TCommonRequestFilter }>,
+	reply: FastifyReply
+) => {
 	try {
 		// user list without admin...
-		const userList = await globalPrisma.user.findMany({
-			where: { id: { not: 1 } },
-			select: { id: true, email: true, username: true, contact: true, user_type_id: true },
-		})
-		return reply.code(200).send({ data: userList })
+		const { pageSize, current, orderBy, orderField, search = '' } = request?.query
+		const args = {
+			...getCommonFilter({ pageSize, current, orderBy, orderField }),
+			where: {
+				id: { not: 1 },
+				OR: [{ username: { contains: search } }, { email: { contains: search } }, { contact: { contains: search } }],
+			},
+		}
+		const [data, total] = await Promise.all([
+			globalPrisma.user.findMany({
+				...args,
+				select: { id: true, email: true, username: true, contact: true, user_type_id: true },
+			}),
+			globalPrisma.user.count(args),
+		])
+		const pageInfo = { pageSize, current, total }
+		return reply.code(200).send({ data, pageInfo })
 	} catch (err: any) {
 		return reply.code(400).send({ message: err.message })
 	}
