@@ -9,10 +9,10 @@ import {
 } from '../controllers/productController'
 
 const productRoute = async (fastifyInstance: FastifyInstance) => {
-	const { create, update } = productSchema
+	const { list, create, update } = productSchema
 
 	// product list
-	fastifyInstance.get('/list', productListController)
+	fastifyInstance.get('/list', { schema: list }, productListController)
 	// product create
 	fastifyInstance.post('/create', { schema: create, preHandler: [isAdminPermitted] }, productCreateController)
 	// product update

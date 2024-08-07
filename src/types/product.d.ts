@@ -1,3 +1,5 @@
+type TProductListQueryType = TCommonRequestFilter & { category_id?: number }
+
 type TProduct = {
 	id: number
 	name: string

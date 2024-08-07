@@ -14,7 +14,7 @@ const supplierCreateSchema: FastifySchema = {
 }
 
 const supplierSchema: TSupplierSchema = {
-	list: commonRequestFilter,
+	list: commonRequestFilter(),
 	create: supplierCreateSchema,
 	update: { ...supplierCreateSchema, params: { type: 'object', properties: { id: { type: 'number' } } } },
 }

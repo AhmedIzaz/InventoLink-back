@@ -13,7 +13,7 @@ const categoryCreateSchema: FastifySchema = {
 }
 
 const categorySchema: TCategorySchema = {
-	list: commonRequestFilter,
+	list: commonRequestFilter(),
 	create: categoryCreateSchema,
 	update: { ...categoryCreateSchema, params: { type: 'object', properties: { id: { type: 'number' } } } },
 }

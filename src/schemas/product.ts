@@ -1,4 +1,5 @@
 import { FastifySchema } from 'fastify'
+import { commonRequestFilter } from '.'
 
 const productCreateSchema: FastifySchema = {
 	body: {
@@ -14,6 +15,7 @@ const productCreateSchema: FastifySchema = {
 }
 
 const productSchema: TProductSchema = {
+	list: commonRequestFilter({ category_id: { type: 'number' } }),
 	create: productCreateSchema,
 	update: { ...productCreateSchema, params: { type: 'object', properties: { id: { type: 'number' } } } },
 }
@@ -21,6 +23,7 @@ const productSchema: TProductSchema = {
 export default productSchema
 
 type TProductSchema = {
+	list: FastifySchema
 	create: FastifySchema
 	update: FastifySchema
 }

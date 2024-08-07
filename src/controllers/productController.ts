@@ -4,15 +4,20 @@ import { getCategoryById } from '../utils/db.utils'
 import { getCommonFilter } from '../utils'
 
 export const productListController = async (
-	request: FastifyRequest<{ Querystring: TCommonRequestFilter & { category_id?: number } }>,
+	request: FastifyRequest<{ Querystring: TProductListQueryType }>,
 	reply: FastifyReply
 ) => {
 	try {
 		const { pageSize, current, orderBy, orderField, search = '', category_id } = request?.query
+
 		const args = {
 			...getCommonFilter({ pageSize, current, orderBy, orderField }),
-			where: { category_id, OR: [{ name: { contains: search } }] },
+			where: {
+				category_id,
+				OR: [{ name: { contains: search } }],
+			},
 		}
+
 		const [data, total] = await Promise.all([
 			globalPrisma.product.findMany({
 				...args,
@@ -20,10 +25,11 @@ export const productListController = async (
 					id: true,
 					name: true,
 					price: true,
+					description: true,
 					categoryId: { select: { id: true, name: true } },
 				},
 			}),
-			globalPrisma.product.count(args),
+			globalPrisma.product.count({ where: args.where }),
 		])
 		const pageInfo = { pageSize, current, total }
 		return reply.code(200).send({ data, pageInfo })
