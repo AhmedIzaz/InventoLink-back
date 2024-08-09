@@ -28,3 +28,7 @@ export const getCommonFilter = ({ pageSize, current, orderBy, orderField }: TCom
 		},
 	}
 }
+
+export const makeDDL = <T>(dataList: T[], label: keyof T, value: keyof T, spreadOtherFields?: boolean) => {
+	return dataList.map((item) => ({ label: item[label], value: item[value], ...(spreadOtherFields && { ...item }) }))
+}

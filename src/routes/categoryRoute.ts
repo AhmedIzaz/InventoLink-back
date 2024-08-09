@@ -6,12 +6,15 @@ import {
 	categoryUpdateController,
 	categoryListController,
 	categoryDeleteController,
+	categoryDropdownController,
 } from '../controllers/categoryController'
 
 const categoryRoute = async (fastifyInstance: FastifyInstance) => {
 	const { list, create, update } = categorySchema
 	// category list
 	fastifyInstance.get('/list', { schema: list }, categoryListController)
+	// category dropdown
+	fastifyInstance.get('/dropdown', categoryDropdownController)
 	// category create
 	fastifyInstance.post('/create', { schema: create, preHandler: [isAdminPermitted] }, categoryCreateController)
 	// category update

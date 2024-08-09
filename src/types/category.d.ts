@@ -1,7 +1,7 @@
 type TCategory = {
 	id: number
 	name: string
-	description: string
+	description?: string | null
 }
 
 type TCategoryForm = {

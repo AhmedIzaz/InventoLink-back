@@ -1,6 +1,6 @@
 import { globalPrisma } from '../app'
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { getCommonFilter } from '../utils'
+import { getCommonFilter, makeDDL } from '../utils'
 
 export const categoryListController = async (
 	request: FastifyRequest<{ Querystring: TCommonRequestFilter }>,
@@ -18,6 +18,16 @@ export const categoryListController = async (
 		])
 		const pageInfo = { pageSize, current, total }
 		return reply.code(200).send({ data, pageInfo })
+	} catch (err: any) {
+		return reply.code(400).send({ message: err.message })
+	}
+}
+
+export const categoryDropdownController = async (request: FastifyRequest, reply: FastifyReply) => {
+	try {
+		const categories = await globalPrisma.category.findMany()
+		const dropdownList = makeDDL<TCategory>(categories, 'name', 'id')
+		return reply.code(200).send(dropdownList)
 	} catch (err: any) {
 		return reply.code(400).send({ message: err.message })
 	}
