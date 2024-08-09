@@ -13,6 +13,8 @@ const productRoute = async (fastifyInstance: FastifyInstance) => {
 
 	// product list
 	fastifyInstance.get('/list', { schema: list }, productListController)
+	// product dropdown searchable
+	// fastifyInstance.get('/dropdown', productDDLController)
 	// product create
 	fastifyInstance.post('/create', { schema: create, preHandler: [isAdminPermitted] }, productCreateController)
 	// product update

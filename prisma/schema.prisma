@@ -63,7 +63,8 @@ model product {
 }
 
 model inventory_stock {
-  product_id Int     @id
+  id         Int     @id @default(autoincrement())
+  product_id Int
   productId  product @relation(fields: [product_id], references: [id])
   quantity   Float
 }
