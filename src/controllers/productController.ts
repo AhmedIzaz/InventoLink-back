@@ -1,7 +1,7 @@
 import { globalPrisma } from '../app'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { getCategoryById } from '../utils/db.utils'
-import { getCommonFilter } from '../utils'
+import { getCommonFilter, makeDDL } from '../utils'
 
 export const productListController = async (
 	request: FastifyRequest<{ Querystring: TProductListQueryType }>,
@@ -33,6 +33,23 @@ export const productListController = async (
 		])
 		const pageInfo = { pageSize, current, total }
 		return reply.code(200).send({ data, pageInfo })
+	} catch (err: any) {
+		return reply.code(400).send({ message: err.message })
+	}
+}
+
+export const searchableProductDDLController = async (
+	request: FastifyRequest<{ Querystring: { search?: string } }>,
+	reply: FastifyReply
+) => {
+	const { search } = request.query
+	try {
+		const products = await globalPrisma.product.findMany({
+			where: { name: { startsWith: search } },
+			take: 200,
+		})
+		const dropdownList = makeDDL<TProduct>(products, 'name', 'id')
+		return reply.code(200).send(dropdownList)
 	} catch (err: any) {
 		return reply.code(400).send({ message: err.message })
 	}

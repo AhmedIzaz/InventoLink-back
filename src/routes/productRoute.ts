@@ -6,7 +6,9 @@ import {
 	productDeleteController,
 	productListController,
 	productUpdateController,
+	searchableProductDDLController,
 } from '../controllers/productController'
+import { commonSearchableRequestFilter } from '../schemas'
 
 const productRoute = async (fastifyInstance: FastifyInstance) => {
 	const { list, create, update } = productSchema
@@ -14,7 +16,7 @@ const productRoute = async (fastifyInstance: FastifyInstance) => {
 	// product list
 	fastifyInstance.get('/list', { schema: list }, productListController)
 	// product dropdown searchable
-	// fastifyInstance.get('/dropdown', productDDLController)
+	fastifyInstance.get('/searchable-ddl', { schema: commonSearchableRequestFilter }, searchableProductDDLController)
 	// product create
 	fastifyInstance.post('/create', { schema: create, preHandler: [isAdminPermitted] }, productCreateController)
 	// product update

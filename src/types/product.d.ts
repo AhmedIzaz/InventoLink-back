@@ -3,7 +3,7 @@ type TProductListQueryType = TCommonRequestFilter & { category_id?: number }
 type TProduct = {
 	id: number
 	name: string
-	description?: string
+	description?: string | null
 	price: number
 	category_id: number
 }

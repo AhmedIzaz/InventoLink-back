@@ -1,3 +1,5 @@
+import { FastifySchema } from 'fastify'
+
 export const commonRequestFilter = (properties?: Record<string, any>) => {
 	return {
 		querystring: {
@@ -10,4 +12,12 @@ export const commonRequestFilter = (properties?: Record<string, any>) => {
 			required: ['pageSize', 'current'],
 		},
 	}
+}
+
+export const commonSearchableRequestFilter: FastifySchema = {
+	querystring: {
+		type: 'object',
+		properties: { search: { type: 'string', minLength: 3, maxLength: 50 } },
+		required: ['search'],
+	},
 }
