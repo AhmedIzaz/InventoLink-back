@@ -1,6 +1,7 @@
 import { globalPrisma } from '../app'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { getCommonFilter } from '../utils'
+import { Prisma } from '@prisma/client'
 
 export const supplierListController = async (
 	request: FastifyRequest<{ Querystring: TCommonRequestFilter }>,
@@ -8,12 +9,18 @@ export const supplierListController = async (
 ) => {
 	try {
 		const { pageSize, current, orderBy, orderField, search = '' } = request?.query
+
 		const args = {
 			...getCommonFilter({ pageSize, current, orderBy, orderField }),
 			where: {
-				OR: [{ name: { contains: search } }, { email: { contains: search } }, { contact: { contains: search } }],
-			},
+				OR: [
+					{ name: { contains: search, mode: 'insensitive' } },
+					{ email: { contains: search } },
+					{ contact: { contains: search } },
+				],
+			} as Prisma.supplierWhereInput,
 		}
+
 		const [data, total] = await Promise.all([
 			globalPrisma.supplier.findMany(args),
 			globalPrisma.supplier.count({ where: args.where }),

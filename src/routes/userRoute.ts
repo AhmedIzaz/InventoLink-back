@@ -9,10 +9,10 @@ import userSchema from '../schemas/user'
 import { isAdminPermitted } from '../middlewares/authMiddleware'
 
 const userRoute = async (fastifyInstance: FastifyInstance) => {
-	const { create, update } = userSchema
+	const { list, create, update } = userSchema
 
 	// user list
-	fastifyInstance.get('/list', userListController)
+	fastifyInstance.get('/list', { schema: list }, userListController)
 	// user create
 	fastifyInstance.post('/create', { schema: create, preHandler: [isAdminPermitted] }, userCreateController)
 	// user update

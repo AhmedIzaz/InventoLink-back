@@ -1,4 +1,5 @@
 import { FastifySchema } from 'fastify'
+import { commonRequestFilter } from '.'
 
 const userCreateSchema: FastifySchema = {
 	body: {
@@ -33,6 +34,7 @@ const userCreateSchema: FastifySchema = {
 }
 
 const userSchema: TUserSchema = {
+	list: commonRequestFilter(),
 	create: userCreateSchema,
 	update: { ...userCreateSchema, params: { type: 'object', properties: { id: { type: 'number' } } } },
 	
@@ -41,6 +43,7 @@ const userSchema: TUserSchema = {
 export default userSchema
 
 type TUserSchema = {
+	list: FastifySchema
 	create: FastifySchema
 	update: FastifySchema
 }

@@ -2,6 +2,7 @@ import { globalPrisma } from '../app'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { getCategoryById } from '../utils/db.utils'
 import { getCommonFilter, makeDDL } from '../utils'
+import { Prisma } from '@prisma/client'
 
 export const productListController = async (
 	request: FastifyRequest<{ Querystring: TProductListQueryType }>,
@@ -14,21 +15,18 @@ export const productListController = async (
 			...getCommonFilter({ pageSize, current, orderBy, orderField }),
 			where: {
 				category_id,
-				OR: [{ name: { contains: search } }],
+				OR: [{ name: { contains: search, mode: 'insensitive' } }],
+			} as Prisma.productWhereInput,
+			select: {
+				id: true,
+				name: true,
+				price: true,
+				description: true,
+				categoryId: { select: { id: true, name: true } },
 			},
 		}
-
 		const [data, total] = await Promise.all([
-			globalPrisma.product.findMany({
-				...args,
-				select: {
-					id: true,
-					name: true,
-					price: true,
-					description: true,
-					categoryId: { select: { id: true, name: true } },
-				},
-			}),
+			globalPrisma.product.findMany(args),
 			globalPrisma.product.count({ where: args.where }),
 		])
 		const pageInfo = { pageSize, current, total }

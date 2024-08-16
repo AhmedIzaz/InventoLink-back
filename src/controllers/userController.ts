@@ -16,13 +16,11 @@ export const userListController = async (
 				id: { not: 1 },
 				OR: [{ username: { contains: search } }, { email: { contains: search } }, { contact: { contains: search } }],
 			},
+			include: { userType: true },
 		}
 		const [data, total] = await Promise.all([
-			globalPrisma.user.findMany({
-				...args,
-				select: { id: true, email: true, username: true, contact: true, user_type_id: true },
-			}),
-			globalPrisma.user.count(args),
+			globalPrisma.user.findMany(args),
+			globalPrisma.user.count({ where: args.where }),
 		])
 		const pageInfo = { pageSize, current, total }
 		return reply.code(200).send({ data, pageInfo })

@@ -1,6 +1,7 @@
 import { globalPrisma } from '../app'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { getCommonFilter } from '../utils'
+import { Prisma } from '@prisma/client'
 
 export const inventoryStockListController = async (
 	request: FastifyRequest<{ Querystring: TCommonRequestFilter }>,
@@ -10,7 +11,9 @@ export const inventoryStockListController = async (
 		const { pageSize, current, orderBy, orderField, search = '' } = request?.query
 		const args = {
 			...getCommonFilter({ pageSize, current, orderBy, orderField }),
-			where: { OR: [{ productId: { name: { contains: search } } }] },
+			where: {
+				OR: [{ productId: { name: { contains: search, mode: 'insensitive' } } }],
+			} as Prisma.inventory_stockWhereInput,
 			include: { productId: { select: { name: true, price: true } } },
 		}
 		const [data, total] = await Promise.all([

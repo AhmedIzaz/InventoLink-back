@@ -1,6 +1,7 @@
 import { globalPrisma } from '../app'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { getCommonFilter, makeDDL } from '../utils'
+import { Prisma } from '@prisma/client'
 
 export const categoryListController = async (
 	request: FastifyRequest<{ Querystring: TCommonRequestFilter }>,
@@ -10,7 +11,7 @@ export const categoryListController = async (
 		const { pageSize, current, orderBy, orderField, search = '' } = request?.query
 		const args = {
 			...getCommonFilter({ pageSize, current, orderBy, orderField }),
-			where: { name: { contains: search } },
+			where: { name: { contains: search, mode: 'insensitive' } } as Prisma.categoryWhereInput,
 		}
 		const [data, total] = await Promise.all([
 			globalPrisma.category.findMany(args),
