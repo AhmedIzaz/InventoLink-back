@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt'
 import { globalPrisma } from '../app'
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { getCommonFilter } from '../utils'
+import { getCommonFilter, makeDDL } from '../utils'
 
 export const userListController = async (
 	request: FastifyRequest<{ Querystring: TCommonRequestFilter }>,
@@ -16,14 +16,33 @@ export const userListController = async (
 				id: { not: 1 },
 				OR: [{ username: { contains: search } }, { email: { contains: search } }, { contact: { contains: search } }],
 			},
-			include: { userType: true },
+			select: {
+				id: true,
+				username: true,
+				email: true,
+				contact: true,
+				isOauthUser: true,
+				oauthProvider: true,
+				userType: true,
+			},
 		}
 		const [data, total] = await Promise.all([
 			globalPrisma.user.findMany(args),
 			globalPrisma.user.count({ where: args.where }),
 		])
+
 		const pageInfo = { pageSize, current, total }
 		return reply.code(200).send({ data, pageInfo })
+	} catch (err: any) {
+		return reply.code(400).send({ message: err.message })
+	}
+}
+
+export const userTypeDDLController = async (_: FastifyRequest, reply: FastifyReply) => {
+	try {
+		const userTypes = await globalPrisma.user_type.findMany({ where: { NOT: { name: 'ADMIN' } } })
+		const dropdownList = makeDDL<TUserType>(userTypes, 'formated_name', 'id')
+		return reply.code(200).send(dropdownList)
 	} catch (err: any) {
 		return reply.code(400).send({ message: err.message })
 	}
@@ -73,6 +92,9 @@ export const userUpdateController = async (
 		if (!isOauthUser && password) {
 			const encryptedPassword = await bcrypt.hash(password, +process.env.PASSWORD_SALT!)
 			payload.password = encryptedPassword
+			payload.oauthProvider = null
+		} else {
+			payload.password = null
 		}
 
 		await globalPrisma.user.update({ where: { id }, data: payload })

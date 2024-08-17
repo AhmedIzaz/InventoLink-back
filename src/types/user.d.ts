@@ -27,6 +27,7 @@ type TGoogleUser = {
 type TUserType = {
 	id: number
 	name: string
+	formated_name: string
 }
 
 type TUserTypes = "ADMIN" | "SALES_STAFF" | "WAREHOUSE_STAFF"

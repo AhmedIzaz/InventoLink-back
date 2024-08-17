@@ -7,17 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-//  user type generally of (admin, sales staff and warehouse staff)
 model user_type {
-  id   Int    @id @default(autoincrement())
-  name String @unique @db.VarChar(100)
-  user user[]
-}
-
-enum EOauthProvider {
-  GOOGLE
-  FACEBOOK
-  LINKEDIN
+  id            Int    @id @default(autoincrement())
+  name          String @unique @db.VarChar(100)
+  formated_name String @db.VarChar(100)
+  user          user[]
 }
 
 model user {
@@ -27,11 +21,11 @@ model user {
   password              String?                 @unique
   contact               String?                 @db.VarChar(200)
   user_type_id          Int
-  userType              user_type               @relation(fields: [user_type_id], references: [id])
   isOauthUser           Boolean                 @default(false)
   oauthProvider         EOauthProvider?
   purchase_order_header purchase_order_header[]
   sales_order_header    sales_order_header[]
+  userType              user_type               @relation(fields: [user_type_id], references: [id])
 }
 
 model supplier {
@@ -55,27 +49,27 @@ model product {
   description           String?                 @db.VarChar(200)
   price                 Float
   category_id           Int
-  categoryId            category                @relation(fields: [category_id], references: [id])
   inventory_stock       inventory_stock[]
   inventory_transaction inventory_transaction[]
+  categoryId            category                @relation(fields: [category_id], references: [id])
   purchase_order_row    purchase_order_row[]
   sales_order_row       sales_order_row[]
 }
 
 model inventory_stock {
-  id         Int     @id @default(autoincrement())
   product_id Int
-  productId  product @relation(fields: [product_id], references: [id])
   quantity   Float
+  id         Int     @id @default(autoincrement())
+  productId  product @relation(fields: [product_id], references: [id])
 }
 
 model inventory_transaction {
   id                   Int     @id @default(autoincrement())
   type                 String  @db.VarChar(50)
   product_id           Int
-  productId            product @relation(fields: [product_id], references: [id])
   product_name         String  @db.VarChar(100)
   transaction_quantity Float
+  productId            product @relation(fields: [product_id], references: [id])
 }
 
 model purchase_order_header {
@@ -83,23 +77,23 @@ model purchase_order_header {
   description        String?              @db.VarChar(200)
   approval_status    String               @db.VarChar(50)
   supplier_id        Int
-  supplierId         supplier             @relation(fields: [supplier_id], references: [id])
   created_by         Int
-  createdBy          user                 @relation(fields: [created_by], references: [id])
   total_price        Float
+  createdBy          user                 @relation(fields: [created_by], references: [id])
+  supplierId         supplier             @relation(fields: [supplier_id], references: [id])
   purchase_order_row purchase_order_row[]
 }
 
 model purchase_order_row {
   id           Int                   @id @default(autoincrement())
   header_id    Int
-  headerId     purchase_order_header @relation(fields: [header_id], references: [id])
   product_id   Int
-  productId    product               @relation(fields: [product_id], references: [id])
   product_name String                @db.VarChar(100)
   quantity     Float
   total_price  Float
   description  String?               @db.VarChar(200)
+  headerId     purchase_order_header @relation(fields: [header_id], references: [id])
+  productId    product               @relation(fields: [product_id], references: [id])
 }
 
 model sales_order_header {
@@ -108,18 +102,24 @@ model sales_order_header {
   approval_status String            @db.VarChar(50)
   customer_name   String            @db.VarChar(100)
   created_by      Int
-  createdBy       user              @relation(fields: [created_by], references: [id])
   total_price     Float
+  createdBy       user              @relation(fields: [created_by], references: [id])
   sales_order_row sales_order_row[]
 }
 
 model sales_order_row {
   id          Int                @id @default(autoincrement())
   header_id   Int
-  headerId    sales_order_header @relation(fields: [header_id], references: [id])
   product_id  Int
-  productId   product            @relation(fields: [product_id], references: [id])
   quantity    Float
   total_price Float
   description String?            @db.VarChar(200)
+  headerId    sales_order_header @relation(fields: [header_id], references: [id])
+  productId   product            @relation(fields: [product_id], references: [id])
+}
+
+enum EOauthProvider {
+  GOOGLE
+  FACEBOOK
+  LINKEDIN
 }
