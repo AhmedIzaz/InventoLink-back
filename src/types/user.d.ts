@@ -1,4 +1,6 @@
-type TToken = TUser & {userType:TUserType}
+type TToken = TUser & { userType: TUserType }
+type TUserListQueryType = TCommonRequestFilter & { user_type_id?: number; oauthProvider?: TOauthProvider }
+
 type TUser = {
 	id?: number
 	username: string
@@ -30,4 +32,4 @@ type TUserType = {
 	formated_name: string
 }
 
-type TUserTypes = "ADMIN" | "SALES_STAFF" | "WAREHOUSE_STAFF"
+type TUserTypes = 'ADMIN' | 'SALES_STAFF' | 'WAREHOUSE_STAFF'

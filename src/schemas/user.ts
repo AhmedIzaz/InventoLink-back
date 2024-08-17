@@ -34,10 +34,9 @@ const userCreateSchema: FastifySchema = {
 }
 
 const userSchema: TUserSchema = {
-	list: commonRequestFilter(),
+	list: commonRequestFilter({ user_type_id: { type: 'number' }, oauthProvider: { type: 'string' } }),
 	create: userCreateSchema,
 	update: { ...userCreateSchema, params: { type: 'object', properties: { id: { type: 'number' } } } },
-	
 }
 
 export default userSchema

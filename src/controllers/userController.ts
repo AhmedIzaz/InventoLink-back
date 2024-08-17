@@ -2,20 +2,27 @@ import bcrypt from 'bcrypt'
 import { globalPrisma } from '../app'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { getCommonFilter, makeDDL } from '../utils'
+import { Prisma } from '@prisma/client'
 
 export const userListController = async (
-	request: FastifyRequest<{ Querystring: TCommonRequestFilter }>,
+	request: FastifyRequest<{ Querystring: TUserListQueryType }>,
 	reply: FastifyReply
 ) => {
 	try {
 		// user list without admin...
-		const { pageSize, current, orderBy, orderField, search = '' } = request?.query
+		const { pageSize, current, orderBy, orderField, search = '', user_type_id, oauthProvider } = request?.query
 		const args = {
 			...getCommonFilter({ pageSize, current, orderBy, orderField }),
 			where: {
 				id: { not: 1 },
-				OR: [{ username: { contains: search } }, { email: { contains: search } }, { contact: { contains: search } }],
-			},
+				user_type_id,
+				oauthProvider,
+				OR: [
+					{ username: { contains: search, mode: 'insensitive' } },
+					{ email: { contains: search } },
+					{ contact: { contains: search } },
+				],
+			} as Prisma.userWhereInput,
 			select: {
 				id: true,
 				username: true,
