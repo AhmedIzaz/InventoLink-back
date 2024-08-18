@@ -8,9 +8,9 @@ datasource db {
 }
 
 model user_type {
-  id            Int    @id @default(autoincrement())
-  name          String @unique @db.VarChar(100)
-  formated_name String @db.VarChar(100)
+  id            Int      @id @default(autoincrement())
+  name          UserType @unique
+  formated_name String   @db.VarChar(100)
   user          user[]
 }
 
@@ -74,8 +74,9 @@ model inventory_transaction {
 
 model purchase_order_header {
   id                 Int                  @id @default(autoincrement())
+  reference_number   String               @db.VarChar(255)
   description        String?              @db.VarChar(200)
-  approval_status    String               @db.VarChar(50)
+  approval_status    ApprovalStatus
   supplier_id        Int
   created_by         Int
   total_price        Float
@@ -97,14 +98,15 @@ model purchase_order_row {
 }
 
 model sales_order_header {
-  id              Int               @id @default(autoincrement())
-  description     String?           @db.VarChar(200)
-  approval_status String            @db.VarChar(50)
-  customer_name   String            @db.VarChar(100)
-  created_by      Int
-  total_price     Float
-  createdBy       user              @relation(fields: [created_by], references: [id])
-  sales_order_row sales_order_row[]
+  id               Int               @id @default(autoincrement())
+  reference_number String            @db.VarChar(255)
+  description      String?           @db.VarChar(200)
+  approval_status  String            @db.VarChar(50)
+  customer_name    String            @db.VarChar(100)
+  created_by       Int
+  total_price      Float
+  createdBy        user              @relation(fields: [created_by], references: [id])
+  sales_order_row  sales_order_row[]
 }
 
 model sales_order_row {
@@ -118,8 +120,20 @@ model sales_order_row {
   productId   product            @relation(fields: [product_id], references: [id])
 }
 
+enum UserType {
+  ADMIN
+  SALES_STAFF
+  WAREHOUSE_STAFF
+}
+
 enum EOauthProvider {
   GOOGLE
   FACEBOOK
   LINKEDIN
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

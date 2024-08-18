@@ -48,7 +48,7 @@ export const userListController = async (
 export const userTypeDDLController = async (_: FastifyRequest, reply: FastifyReply) => {
 	try {
 		const userTypes = await globalPrisma.user_type.findMany({ where: { NOT: { name: 'ADMIN' } } })
-		const dropdownList = makeDDL<TUserType>(userTypes, 'formated_name', 'id')
+		const dropdownList = makeDDL<TUserType>(userTypes!, 'formated_name', 'id')
 		return reply.code(200).send(dropdownList)
 	} catch (err: any) {
 		return reply.code(400).send({ message: err.message })

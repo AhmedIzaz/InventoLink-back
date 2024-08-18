@@ -32,3 +32,10 @@ export const getCommonFilter = ({ pageSize, current, orderBy, orderField }: TCom
 export const makeDDL = <T>(dataList: T[], label: keyof T, value: keyof T, spreadOtherFields?: boolean) => {
 	return dataList.map((item) => ({ label: item[label], value: item[value], ...(spreadOtherFields && { ...item }) }))
 }
+
+export const PO_REF_PREFIX = 'PO-'
+export const SO_REF_PREFIX = 'SO-'
+
+export const generateReference = (prefix: string) => {
+	return prefix + '-' + Math.floor(Math.random() * 1000000000).toString(36)
+}

@@ -16,3 +16,5 @@ type TCommonRequestFilter = {
 }
 
 type TCommonResponseFilter = { total?: number; current?: number; pageSize?: number }
+
+type TApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED'

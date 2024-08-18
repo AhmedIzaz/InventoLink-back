@@ -1,16 +1,17 @@
-/*
-  Warnings:
+-- CreateEnum
+CREATE TYPE "UserType" AS ENUM ('ADMIN', 'SALES_STAFF', 'WAREHOUSE_STAFF');
 
-  - You are about to drop the `chat_user` table. If the table is not empty, all the data it contains will be lost.
+-- CreateEnum
+CREATE TYPE "EOauthProvider" AS ENUM ('GOOGLE', 'FACEBOOK', 'LINKEDIN');
 
-*/
--- DropTable
-DROP TABLE "chat_user";
+-- CreateEnum
+CREATE TYPE "ApprovalStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
 
 -- CreateTable
 CREATE TABLE "user_type" (
     "id" SERIAL NOT NULL,
-    "name" CHAR(100) NOT NULL,
+    "name" "UserType" NOT NULL,
+    "formated_name" VARCHAR(100) NOT NULL,
 
     CONSTRAINT "user_type_pkey" PRIMARY KEY ("id")
 );
@@ -18,11 +19,13 @@ CREATE TABLE "user_type" (
 -- CreateTable
 CREATE TABLE "user" (
     "id" SERIAL NOT NULL,
-    "username" CHAR(100) NOT NULL,
-    "email" CHAR(100) NOT NULL,
-    "password" TEXT NOT NULL,
-    "contact" CHAR(200) NOT NULL,
+    "username" VARCHAR(100) NOT NULL,
+    "email" VARCHAR(100) NOT NULL,
+    "password" TEXT,
+    "contact" VARCHAR(200),
     "user_type_id" INTEGER NOT NULL,
+    "isOauthUser" BOOLEAN NOT NULL DEFAULT false,
+    "oauthProvider" "EOauthProvider",
 
     CONSTRAINT "user_pkey" PRIMARY KEY ("id")
 );
@@ -30,9 +33,9 @@ CREATE TABLE "user" (
 -- CreateTable
 CREATE TABLE "supplier" (
     "id" SERIAL NOT NULL,
-    "name" CHAR(100) NOT NULL,
-    "email" CHAR(100) NOT NULL,
-    "contact" CHAR(200) NOT NULL,
+    "name" VARCHAR(100) NOT NULL,
+    "email" VARCHAR(100) NOT NULL,
+    "contact" VARCHAR(200) NOT NULL,
 
     CONSTRAINT "supplier_pkey" PRIMARY KEY ("id")
 );
@@ -40,8 +43,8 @@ CREATE TABLE "supplier" (
 -- CreateTable
 CREATE TABLE "category" (
     "id" SERIAL NOT NULL,
-    "name" CHAR(100) NOT NULL,
-    "description" CHAR(200),
+    "name" VARCHAR(100) NOT NULL,
+    "description" VARCHAR(200),
 
     CONSTRAINT "category_pkey" PRIMARY KEY ("id")
 );
@@ -49,8 +52,8 @@ CREATE TABLE "category" (
 -- CreateTable
 CREATE TABLE "product" (
     "id" SERIAL NOT NULL,
-    "name" CHAR(100) NOT NULL,
-    "description" CHAR(200),
+    "name" VARCHAR(100) NOT NULL,
+    "description" VARCHAR(200),
     "price" DOUBLE PRECISION NOT NULL,
     "category_id" INTEGER NOT NULL,
 
@@ -61,16 +64,17 @@ CREATE TABLE "product" (
 CREATE TABLE "inventory_stock" (
     "product_id" INTEGER NOT NULL,
     "quantity" DOUBLE PRECISION NOT NULL,
+    "id" SERIAL NOT NULL,
 
-    CONSTRAINT "inventory_stock_pkey" PRIMARY KEY ("product_id")
+    CONSTRAINT "inventory_stock_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "inventory_transaction" (
     "id" SERIAL NOT NULL,
-    "type" CHAR(50) NOT NULL,
+    "type" VARCHAR(50) NOT NULL,
     "product_id" INTEGER NOT NULL,
-    "product_name" CHAR(100) NOT NULL,
+    "product_name" VARCHAR(100) NOT NULL,
     "transaction_quantity" DOUBLE PRECISION NOT NULL,
 
     CONSTRAINT "inventory_transaction_pkey" PRIMARY KEY ("id")
@@ -79,8 +83,9 @@ CREATE TABLE "inventory_transaction" (
 -- CreateTable
 CREATE TABLE "purchase_order_header" (
     "id" SERIAL NOT NULL,
-    "description" CHAR(200),
-    "approval_status" CHAR(50) NOT NULL,
+    "reference_number" VARCHAR(255) NOT NULL,
+    "description" VARCHAR(200),
+    "approval_status" "ApprovalStatus" NOT NULL,
     "supplier_id" INTEGER NOT NULL,
     "created_by" INTEGER NOT NULL,
     "total_price" DOUBLE PRECISION NOT NULL,
@@ -93,10 +98,10 @@ CREATE TABLE "purchase_order_row" (
     "id" SERIAL NOT NULL,
     "header_id" INTEGER NOT NULL,
     "product_id" INTEGER NOT NULL,
-    "product_name" CHAR(100) NOT NULL,
+    "product_name" VARCHAR(100) NOT NULL,
     "quantity" DOUBLE PRECISION NOT NULL,
     "total_price" DOUBLE PRECISION NOT NULL,
-    "description" CHAR(200),
+    "description" VARCHAR(200),
 
     CONSTRAINT "purchase_order_row_pkey" PRIMARY KEY ("id")
 );
@@ -104,9 +109,10 @@ CREATE TABLE "purchase_order_row" (
 -- CreateTable
 CREATE TABLE "sales_order_header" (
     "id" SERIAL NOT NULL,
-    "description" CHAR(200),
-    "approval_status" CHAR(50) NOT NULL,
-    "customer_name" CHAR(100) NOT NULL,
+    "reference_number" VARCHAR(255) NOT NULL,
+    "description" VARCHAR(200),
+    "approval_status" VARCHAR(50) NOT NULL,
+    "customer_name" VARCHAR(100) NOT NULL,
     "created_by" INTEGER NOT NULL,
     "total_price" DOUBLE PRECISION NOT NULL,
 
@@ -120,7 +126,7 @@ CREATE TABLE "sales_order_row" (
     "product_id" INTEGER NOT NULL,
     "quantity" DOUBLE PRECISION NOT NULL,
     "total_price" DOUBLE PRECISION NOT NULL,
-    "description" CHAR(200),
+    "description" VARCHAR(200),
 
     CONSTRAINT "sales_order_row_pkey" PRIMARY KEY ("id")
 );
@@ -140,9 +146,6 @@ CREATE UNIQUE INDEX "supplier_email_key" ON "supplier"("email");
 -- CreateIndex
 CREATE UNIQUE INDEX "category_name_key" ON "category"("name");
 
--- CreateIndex
-CREATE UNIQUE INDEX "product_name_key" ON "product"("name");
-
 -- AddForeignKey
 ALTER TABLE "user" ADD CONSTRAINT "user_user_type_id_fkey" FOREIGN KEY ("user_type_id") REFERENCES "user_type"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -156,10 +159,10 @@ ALTER TABLE "inventory_stock" ADD CONSTRAINT "inventory_stock_product_id_fkey" F
 ALTER TABLE "inventory_transaction" ADD CONSTRAINT "inventory_transaction_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "purchase_order_header" ADD CONSTRAINT "purchase_order_header_supplier_id_fkey" FOREIGN KEY ("supplier_id") REFERENCES "supplier"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "purchase_order_header" ADD CONSTRAINT "purchase_order_header_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "purchase_order_header" ADD CONSTRAINT "purchase_order_header_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "purchase_order_header" ADD CONSTRAINT "purchase_order_header_supplier_id_fkey" FOREIGN KEY ("supplier_id") REFERENCES "supplier"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "purchase_order_row" ADD CONSTRAINT "purchase_order_row_header_id_fkey" FOREIGN KEY ("header_id") REFERENCES "purchase_order_header"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
