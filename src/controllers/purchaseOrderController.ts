@@ -2,6 +2,7 @@ import { FastifyReply, FastifyRequest } from 'fastify'
 import { generateReference, getCommonFilter, PO_REF_PREFIX } from '../utils'
 import { Prisma } from '@prisma/client'
 import { globalPrisma } from '../app'
+import { createPORows, deletePOHeader, deletePORows, getPOHeader, updatePOHeader } from '../utils/db.utils'
 
 export const POListController = async (request: FastifyRequest<{ Querystring: TPOListQueryType }>, reply: FastifyReply) => {
 	try {
@@ -44,12 +45,11 @@ export const PODetailsController = async (request: FastifyRequest<{ Querystring:
 			where: { id },
 			include: { purchase_order_row: true },
 		})
-		const { purchase_order_row, ...purchase_order_header } = { ...(header ?? {}) }
-		const payload = {
-			header: purchase_order_header,
-			rows: purchase_order_row,
+		if (!header) {
+			return reply.code(404).send({ message: 'Purchase Order not found' })
 		}
-		return reply.code(200).send({ data: payload })
+		const { purchase_order_row, ...purchase_order_header } = { ...(header ?? {}) }
+		return reply.code(200).send({ data: { header: purchase_order_header, rows: purchase_order_row } })
 	} catch (err: any) {
 		return reply.code(400).send({ message: err.message })
 	}
@@ -64,7 +64,7 @@ export const POCreateController = async (request: FastifyRequest<{ Body: TPOCrea
 			globalPrisma.supplier.findFirst({ where: { id: header.supplier_id } }),
 		])
 		if (!user || !supplier) {
-			throw new Error(`User or Supplier not found`)
+			return reply.code(404).send({ message: 'User or Supplier not found' })
 		}
 		// Validate that all products exist
 		const missingProducts = await Promise.all(
@@ -82,11 +82,53 @@ export const POCreateController = async (request: FastifyRequest<{ Body: TPOCrea
 		const POHeader = await globalPrisma.purchase_order_header.create({
 			data: { ...header, reference_number: generateReference(PO_REF_PREFIX), approval_status: 'PENDING' },
 		})
-		await globalPrisma.purchase_order_row.createMany({
-			data: rows?.map((item) => ({ ...item, header_id: POHeader.id })),
-		})
 
+		await createPORows(rows, POHeader.id)
 		return reply.code(200).send({ message: 'Purchase Order created successfully' })
+	} catch (err: any) {
+		return reply.code(400).send({ message: err.message })
+	}
+}
+
+export const POUpdateController = async (
+	request: FastifyRequest<{ Body: TPOCreateUpdatePayload; Params: { id: number } }>,
+	reply: FastifyReply
+) => {
+	try {
+		const { id } = request.params
+		const { header, rows } = { ...(request.body ?? {}) }
+		const [userId, userType] = [request.user.id, request.user.userType.name as TUserTypes]
+
+		const thePOHeader = await getPOHeader(id)
+		if (!thePOHeader || (thePOHeader?.created_by !== userId && userType !== 'ADMIN')) {
+			throw new Error('You are not authorized to update this Purchase Order')
+		}
+		if (thePOHeader?.approval_status !== 'PENDING') {
+			throw new Error('Purchase Order cannot be updated after it is approved or rejected')
+		}
+
+		await Promise.all([updatePOHeader(id, header), deletePORows(id)])
+		await createPORows(rows, id)
+		return reply.code(200).send({ message: 'Purchase Order updated successfully' })
+	} catch (err: any) {
+		return reply.code(400).send({ message: err.message })
+	}
+}
+
+export const PODeleteController = async (request: FastifyRequest<{ Params: { id: number } }>, reply: FastifyReply) => {
+	try {
+		const [userId, userType] = [request.user.id, request.user.userType.name as TUserTypes]
+		const { id } = request.params
+		const thePOHeader = await getPOHeader(id)
+		if (!(thePOHeader?.created_by === userId || userType === 'ADMIN')) {
+			throw new Error('You are not authorized to delete this Purchase Order')
+		}
+		if (thePOHeader?.approval_status !== 'PENDING') {
+			throw new Error('Purchase Order cannot be deleted after it is approved or rejected')
+		}
+		await deletePORows(id)
+		await deletePOHeader(id)
+		return reply.code(200).send({ message: 'Purchase Order deleted successfully' })
 	} catch (err: any) {
 		return reply.code(400).send({ message: err.message })
 	}
