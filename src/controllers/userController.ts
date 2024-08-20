@@ -3,6 +3,7 @@ import { globalPrisma } from '../app'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { getCommonFilter, makeDDL } from '../utils'
 import { Prisma } from '@prisma/client'
+import { getUser, getUserByEmail } from '../utils/db.utils'
 
 export const userListController = async (
 	request: FastifyRequest<{ Querystring: TUserListQueryType }>,
@@ -58,7 +59,7 @@ export const userTypeDDLController = async (_: FastifyRequest, reply: FastifyRep
 export const userCreateController = async (request: FastifyRequest<{ Body: TUser }>, reply: FastifyReply) => {
 	try {
 		const { username, email, password, contact, user_type_id, isOauthUser, oauthProvider } = request.body
-		const user = await globalPrisma.user.findFirst({ where: { email } })
+		const user = await getUserByEmail(email)
 		if (user) {
 			throw new Error('User with this email already exists')
 		}
@@ -75,18 +76,14 @@ export const userCreateController = async (request: FastifyRequest<{ Body: TUser
 }
 
 export const userUpdateController = async (
-	request: FastifyRequest<{ Body: TUser; Params?: { id: number } }>,
+	request: FastifyRequest<{ Body: TUser; Params: { id: number } }>,
 	reply: FastifyReply
 ) => {
 	try {
 		const { id } = request.params ?? {}
 		const { username, email, password, contact, user_type_id, isOauthUser, oauthProvider } = request.body
 
-		const [user, anotherUser] = await Promise.all([
-			globalPrisma.user.findFirst({ where: { id } }),
-			globalPrisma.user.findFirst({ where: { email } }),
-		])
-
+		const [user, anotherUser] = await Promise.all([getUser(id), getUserByEmail(email)])
 		if (!user) {
 			throw new Error('User not found')
 		}
@@ -114,8 +111,7 @@ export const userUpdateController = async (
 export const userDeleteController = async (request: FastifyRequest<{ Params: { id: number } }>, reply: FastifyReply) => {
 	try {
 		const { id } = request.params
-		const user = await globalPrisma.user.findFirst({ where: { id: +id } })
-
+		const user = await getUser(id)
 		if (!user) {
 			throw new Error('User not found')
 		}

@@ -10,7 +10,7 @@ import {
 } from '../controllers/purchaseOrderController'
 
 const purchaseOrderRoute = async (fastifyInstance: FastifyInstance) => {
-	const { list, create, update } = purchaseOrderSchema
+	const { details, list, create, update } = purchaseOrderSchema
 	// PO list
 	fastifyInstance.get(
 		'/list',
@@ -18,7 +18,11 @@ const purchaseOrderRoute = async (fastifyInstance: FastifyInstance) => {
 		POListController
 	)
 	// PO details
-	fastifyInstance.get('/details/:id', { preHandler: [isAdminPermitted, isWarehouseStaffPermitted] }, PODetailsController)
+	fastifyInstance.get(
+		'/details/:id',
+		{ schema: details, preHandler: [isAdminPermitted, isWarehouseStaffPermitted] },
+		PODetailsController
+	)
 	// PO create
 	fastifyInstance.post(
 		'/create',
@@ -32,7 +36,11 @@ const purchaseOrderRoute = async (fastifyInstance: FastifyInstance) => {
 		POUpdateController
 	)
 	// PO delete
-	fastifyInstance.delete('/delete/:id', { preHandler: [isAdminPermitted, isWarehouseStaffPermitted] }, PODeleteController)
+	fastifyInstance.delete(
+		'/delete/:id',
+		{ schema: purchaseOrderSchema.delete, preHandler: [isAdminPermitted, isWarehouseStaffPermitted] },
+		PODeleteController
+	)
 }
 
 export default purchaseOrderRoute

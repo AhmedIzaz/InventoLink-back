@@ -2,6 +2,7 @@ import { globalPrisma } from '../app'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { getCommonFilter } from '../utils'
 import { Prisma } from '@prisma/client'
+import { getInventoryStockById, getInventoryStockByProductId, getProductById } from '../utils/db.utils'
 
 export const inventoryStockListController = async (
 	request: FastifyRequest<{ Querystring: TCommonRequestFilter }>,
@@ -33,7 +34,15 @@ export const inventoryStockCreateController = async (
 ) => {
 	try {
 		const { product_id, quantity } = request.body
-		const inventoryStock = await globalPrisma.inventory_stock.findFirst({ where: { product_id } })
+		const [inventoryStock, product] = await Promise.all([
+			getInventoryStockByProductId(product_id),
+			getProductById(product_id),
+		])
+
+		if (!product) {
+			throw new Error('Product not found')
+		}
+
 		if (inventoryStock) {
 			throw new Error('Inventory stock with this product already exists')
 		}
@@ -46,16 +55,17 @@ export const inventoryStockCreateController = async (
 }
 
 export const inventoryStockUpdateController = async (
-	request: FastifyRequest<{ Body: TInventoryStockForm; Params?: { id: number } }>,
+	request: FastifyRequest<{ Body: TInventoryStockForm; Params: { id: number } }>,
 	reply: FastifyReply
 ) => {
 	try {
 		const { id } = request.params ?? {}
 		const { quantity, product_id } = request.body
 
-		const [inventoryStock, anotherInventoryStock] = await Promise.all([
-			globalPrisma.inventory_stock.findFirst({ where: { id } }),
-			globalPrisma.inventory_stock.findFirst({ where: { product_id } }),
+		const [inventoryStock, anotherInventoryStock, product] = await Promise.all([
+			getInventoryStockById(id),
+			getInventoryStockByProductId(product_id),
+			getProductById(product_id),
 		])
 
 		if (!inventoryStock) {
@@ -65,6 +75,11 @@ export const inventoryStockUpdateController = async (
 		if (anotherInventoryStock && anotherInventoryStock?.id !== id) {
 			throw new Error('Inventory stock with this product already exists')
 		}
+
+		if (!product) {
+			throw new Error('Product not found')
+		}
+
 		const payload: TInventoryStockForm = { quantity, product_id }
 		await globalPrisma.inventory_stock.update({ where: { id }, data: payload })
 		return reply.code(200).send({ message: 'Inventory stock updated successfully' })
@@ -79,7 +94,7 @@ export const inventoryStockDeleteController = async (
 ) => {
 	try {
 		const { id } = request.params ?? {}
-		const inventoryStock = await globalPrisma.inventory_stock.findFirst({ where: { id: +id } })
+		const inventoryStock = await getInventoryStockById(id)
 
 		if (!inventoryStock) {
 			throw new Error('Inventory stock not found')

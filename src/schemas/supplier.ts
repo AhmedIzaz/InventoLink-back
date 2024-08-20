@@ -17,6 +17,7 @@ const supplierSchema: TSupplierSchema = {
 	list: commonRequestFilter(),
 	create: supplierCreateSchema,
 	update: { ...supplierCreateSchema, params: { type: 'object', properties: { id: { type: 'number' } } } },
+	delete: { params: { type: 'object', properties: { id: { type: 'number' } } } },
 }
 
 export default supplierSchema
@@ -25,4 +26,5 @@ type TSupplierSchema = {
 	list: FastifySchema
 	create: FastifySchema
 	update: FastifySchema
+	delete: FastifySchema
 }

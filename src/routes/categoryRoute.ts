@@ -20,7 +20,11 @@ const categoryRoute = async (fastifyInstance: FastifyInstance) => {
 	// category update
 	fastifyInstance.put('/update/:id', { schema: update, preHandler: [isAdminPermitted] }, categoryUpdateController)
 	// category delete
-	fastifyInstance.delete('/delete/:id', { preHandler: [isAdminPermitted] }, categoryDeleteController)
+	fastifyInstance.delete(
+		'/delete/:id',
+		{ schema: categorySchema.delete, preHandler: [isAdminPermitted] },
+		categoryDeleteController
+	)
 }
 
 export default categoryRoute

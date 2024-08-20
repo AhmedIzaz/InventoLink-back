@@ -18,7 +18,11 @@ const inventoryStockRoute = async (fastifyInstance: FastifyInstance) => {
 	// inventory-stock update
 	fastifyInstance.put('/update/:id', { schema: update, preHandler: [isAdminPermitted] }, inventoryStockUpdateController)
 	// inventory-stock delete
-	fastifyInstance.delete('/delete/:id', { preHandler: [isAdminPermitted] }, inventoryStockDeleteController)
+	fastifyInstance.delete(
+		'/delete/:id',
+		{ schema: inventoryStockSchema.delete, preHandler: [isAdminPermitted] },
+		inventoryStockDeleteController
+	)
 }
 
 export default inventoryStockRoute

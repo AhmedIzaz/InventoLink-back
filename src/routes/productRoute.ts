@@ -22,7 +22,11 @@ const productRoute = async (fastifyInstance: FastifyInstance) => {
 	// product update
 	fastifyInstance.put('/update/:id', { schema: update, preHandler: [isAdminPermitted] }, productUpdateController)
 	// product delete
-	fastifyInstance.delete('/delete/:id', { preHandler: [isAdminPermitted] }, productDeleteController)
+	fastifyInstance.delete(
+		'/delete/:id',
+		{ schema: productSchema.delete, preHandler: [isAdminPermitted] },
+		productDeleteController
+	)
 }
 
 export default productRoute

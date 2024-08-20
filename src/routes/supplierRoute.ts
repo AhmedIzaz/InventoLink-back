@@ -18,7 +18,11 @@ const supplierRoute = async (fastifyInstance: FastifyInstance) => {
 	// supplier update
 	fastifyInstance.put('/update/:id', { schema: update, preHandler: [isAdminPermitted] }, supplierUpdateController)
 	// supplier delete
-	fastifyInstance.delete('/delete/:id', { preHandler: [isAdminPermitted] }, supplierDeleteController)
+	fastifyInstance.delete(
+		'/delete/:id',
+		{ schema: supplierSchema.delete, preHandler: [isAdminPermitted] },
+		supplierDeleteController
+	)
 }
 
 export default supplierRoute

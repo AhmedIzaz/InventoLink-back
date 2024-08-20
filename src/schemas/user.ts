@@ -37,6 +37,7 @@ const userSchema: TUserSchema = {
 	list: commonRequestFilter({ user_type_id: { type: 'number' }, oauthProvider: { type: 'string' } }),
 	create: userCreateSchema,
 	update: { ...userCreateSchema, params: { type: 'object', properties: { id: { type: 'number' } } } },
+	delete: { params: { type: 'object', properties: { id: { type: 'number' } } } },
 }
 
 export default userSchema
@@ -45,4 +46,5 @@ type TUserSchema = {
 	list: FastifySchema
 	create: FastifySchema
 	update: FastifySchema
+	delete: FastifySchema
 }

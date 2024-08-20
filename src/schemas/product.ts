@@ -18,6 +18,7 @@ const productSchema: TProductSchema = {
 	list: commonRequestFilter({ category_id: { type: 'number' } }),
 	create: productCreateSchema,
 	update: { ...productCreateSchema, params: { type: 'object', properties: { id: { type: 'number' } } } },
+	delete: { params: { type: 'object', properties: { id: { type: 'number' } } } },
 }
 
 export default productSchema
@@ -26,4 +27,5 @@ type TProductSchema = {
 	list: FastifySchema
 	create: FastifySchema
 	update: FastifySchema
+	delete: FastifySchema
 }

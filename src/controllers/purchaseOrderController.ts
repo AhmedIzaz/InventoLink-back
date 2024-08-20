@@ -1,8 +1,16 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { generateReference, getCommonFilter, PO_REF_PREFIX } from '../utils'
+import { areProductsValid, generateReference, getCommonFilter, PO_REF_PREFIX } from '../utils'
 import { Prisma } from '@prisma/client'
 import { globalPrisma } from '../app'
-import { createPORows, deletePOHeader, deletePORows, getPOHeader, updatePOHeader } from '../utils/db.utils'
+import {
+	createPORows,
+	deletePOHeader,
+	deletePORows,
+	getPOHeader,
+	getSupplier,
+	getUser,
+	updatePOHeader,
+} from '../utils/db.utils'
 
 export const POListController = async (request: FastifyRequest<{ Querystring: TPOListQueryType }>, reply: FastifyReply) => {
 	try {
@@ -38,9 +46,9 @@ export const POListController = async (request: FastifyRequest<{ Querystring: TP
 }
 
 // PO details by using PO header id
-export const PODetailsController = async (request: FastifyRequest<{ Querystring: { id: number } }>, reply: FastifyReply) => {
+export const PODetailsController = async (request: FastifyRequest<{ Params: { id: number } }>, reply: FastifyReply) => {
 	try {
-		const { id } = request.query
+		const { id } = request.params
 		const header = await globalPrisma.purchase_order_header.findFirst({
 			where: { id },
 			include: { purchase_order_row: true },
@@ -59,23 +67,12 @@ export const POCreateController = async (request: FastifyRequest<{ Body: TPOCrea
 	try {
 		const { header, rows } = { ...(request.body ?? {}) }
 		// check the supplier and user is exist or not
-		const [user, supplier] = await Promise.all([
-			globalPrisma.user.findFirst({ where: { id: header.created_by } }),
-			globalPrisma.supplier.findFirst({ where: { id: header.supplier_id } }),
-		])
+		const [user, supplier] = await Promise.all([getUser(header.created_by), getSupplier(header.supplier_id)])
 		if (!user || !supplier) {
 			return reply.code(404).send({ message: 'User or Supplier not found' })
 		}
-		// Validate that all products exist
-		const missingProducts = await Promise.all(
-			rows.map(async (product) => {
-				const exist = await globalPrisma.product.findFirst({ where: { id: product.product_id } })
-				return exist ? null : product.product_name
-			})
-		)
-
-		const missingProductNames = missingProducts.filter(Boolean)
-		if (missingProductNames.length > 0) {
+		const [validProducts, missingProductNames] = await areProductsValid(rows)
+		if (!validProducts) {
 			return reply.code(404).send({ message: `Products not found: ${missingProductNames.join(', ')}` })
 		}
 
@@ -99,12 +96,23 @@ export const POUpdateController = async (
 		const { header, rows } = { ...(request.body ?? {}) }
 		const [userId, userType] = [request.user.id, request.user.userType.name as TUserTypes]
 
+		// check the supplier and user is exist or not
+		const [user, supplier] = await Promise.all([getUser(header.created_by), getSupplier(header.supplier_id)])
+		if (!user || !supplier) {
+			return reply.code(404).send({ message: 'User or Supplier not found' })
+		}
+
 		const thePOHeader = await getPOHeader(id)
 		if (!thePOHeader || (thePOHeader?.created_by !== userId && userType !== 'ADMIN')) {
 			throw new Error('You are not authorized to update this Purchase Order')
 		}
 		if (thePOHeader?.approval_status !== 'PENDING') {
 			throw new Error('Purchase Order cannot be updated after it is approved or rejected')
+		}
+
+		const [validProducts, missingProductNames] = await areProductsValid(rows)
+		if (!validProducts) {
+			return reply.code(404).send({ message: `Products not found: ${missingProductNames.join(', ')}` })
 		}
 
 		await Promise.all([updatePOHeader(id, header), deletePORows(id)])

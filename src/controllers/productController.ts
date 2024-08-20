@@ -1,6 +1,6 @@
 import { globalPrisma } from '../app'
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { getCategoryById } from '../utils/db.utils'
+import { getCategoryById, getProductById } from '../utils/db.utils'
 import { getCommonFilter, makeDDL } from '../utils'
 import { Prisma } from '@prisma/client'
 
@@ -69,13 +69,13 @@ export const productCreateController = async (request: FastifyRequest<{ Body: TP
 }
 
 export const productUpdateController = async (
-	request: FastifyRequest<{ Body: TProductForm; Params?: { id: number } }>,
+	request: FastifyRequest<{ Body: TProductForm; Params: { id: number } }>,
 	reply: FastifyReply
 ) => {
 	try {
 		const { id } = request.params ?? {}
 		const { name, description, price, category_id } = request.body
-		const product = await globalPrisma.product.findFirst({ where: { id } })
+		const product = await getProductById(id)
 		if (!product) {
 			throw new Error('Product not found')
 		}
@@ -94,7 +94,7 @@ export const productUpdateController = async (
 export const productDeleteController = async (request: FastifyRequest<{ Params: { id: number } }>, reply: FastifyReply) => {
 	try {
 		const { id } = request.params ?? {}
-		const product = await globalPrisma.product.findFirst({ where: { id: +id } })
+		const product = await getProductById(id)
 
 		if (!product) {
 			throw new Error('Product not found')

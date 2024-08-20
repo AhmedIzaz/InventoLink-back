@@ -16,6 +16,7 @@ const categorySchema: TCategorySchema = {
 	list: commonRequestFilter(),
 	create: categoryCreateSchema,
 	update: { ...categoryCreateSchema, params: { type: 'object', properties: { id: { type: 'number' } } } },
+	delete: { params: { type: 'object', properties: { id: { type: 'number' } } } },
 }
 
 export default categorySchema
@@ -24,4 +25,5 @@ type TCategorySchema = {
 	list: FastifySchema
 	create: FastifySchema
 	update: FastifySchema
+	delete: FastifySchema
 }

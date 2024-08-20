@@ -38,14 +38,18 @@ const purchaseOrderCreateSchema: FastifySchema = {
 
 const purchaseOrderSchema: TPurchaseOrderSchema = {
 	list: commonRequestFilter(),
+	details: { params: { type: 'object', properties: { id: { type: 'number' } } } },
 	create: purchaseOrderCreateSchema,
 	update: { ...purchaseOrderCreateSchema, params: { type: 'object', properties: { id: { type: 'number' } } } },
+	delete: { params: { type: 'object', properties: { id: { type: 'number' } } } },
 }
 
 export default purchaseOrderSchema
 
 type TPurchaseOrderSchema = {
 	list: FastifySchema
+	details: FastifySchema
 	create: FastifySchema
 	update: FastifySchema
+	delete: FastifySchema
 }

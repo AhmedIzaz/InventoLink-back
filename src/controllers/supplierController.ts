@@ -2,6 +2,7 @@ import { globalPrisma } from '../app'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { getCommonFilter } from '../utils'
 import { Prisma } from '@prisma/client'
+import { getSupplier, getSupplierByEmail } from '../utils/db.utils'
 
 export const supplierListController = async (
 	request: FastifyRequest<{ Querystring: TCommonRequestFilter }>,
@@ -35,7 +36,7 @@ export const supplierListController = async (
 export const supplierCreateController = async (request: FastifyRequest<{ Body: TSupplierForm }>, reply: FastifyReply) => {
 	try {
 		const { name, email, contact } = request.body
-		const supplier = await globalPrisma.supplier.findFirst({ where: { email } })
+		const supplier = await getSupplierByEmail(email)
 		if (supplier) {
 			throw new Error('Supplier with this email already exists')
 		}
@@ -48,17 +49,14 @@ export const supplierCreateController = async (request: FastifyRequest<{ Body: T
 }
 
 export const supplierUpdateController = async (
-	request: FastifyRequest<{ Body: TSupplierForm; Params?: { id: number } }>,
+	request: FastifyRequest<{ Body: TSupplierForm; Params: { id: number } }>,
 	reply: FastifyReply
 ) => {
 	try {
 		const { id } = request.params ?? {}
 		const { name, email, contact } = request.body
 
-		const [supplier, anotherSupplier] = await Promise.all([
-			globalPrisma.supplier.findFirst({ where: { id } }),
-			globalPrisma.supplier.findFirst({ where: { email } }),
-		])
+		const [supplier, anotherSupplier] = await Promise.all([getSupplier(id), getSupplierByEmail(email)])
 
 		if (!supplier) {
 			throw new Error('Supplier not found')
@@ -78,13 +76,13 @@ export const supplierUpdateController = async (
 export const supplierDeleteController = async (request: FastifyRequest<{ Params: { id: number } }>, reply: FastifyReply) => {
 	try {
 		const { id } = request.params ?? {}
-		const supplier = await globalPrisma.supplier.findFirst({ where: { id: +id } })
+		const supplier = await getSupplier(id)
 
 		if (!supplier) {
 			throw new Error('Supplier not found')
 		}
 
-		await globalPrisma.supplier.delete({ where: { id: +id } })
+		await globalPrisma.supplier.delete({ where: { id } })
 		return reply.code(200).send({ message: 'Supplier deleted successfully' })
 	} catch (error: any) {
 		return reply.code(400).send({ message: error.message })

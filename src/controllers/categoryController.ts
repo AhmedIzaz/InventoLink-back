@@ -2,6 +2,7 @@ import { globalPrisma } from '../app'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { getCommonFilter, makeDDL } from '../utils'
 import { Prisma } from '@prisma/client'
+import { getCategoryById, getCategoryByName } from '../utils/db.utils'
 
 export const categoryListController = async (
 	request: FastifyRequest<{ Querystring: TCommonRequestFilter }>,
@@ -24,7 +25,7 @@ export const categoryListController = async (
 	}
 }
 
-export const categoryDropdownController = async (request: FastifyRequest, reply: FastifyReply) => {
+export const categoryDropdownController = async (_: FastifyRequest, reply: FastifyReply) => {
 	try {
 		const categories = await globalPrisma.category.findMany()
 		const dropdownList = makeDDL<TCategory>(categories, 'name', 'id')
@@ -37,7 +38,7 @@ export const categoryDropdownController = async (request: FastifyRequest, reply:
 export const categoryCreateController = async (request: FastifyRequest<{ Body: TCategoryForm }>, reply: FastifyReply) => {
 	try {
 		const { name, description } = request.body
-		const category = await globalPrisma.category.findFirst({ where: { name } })
+		const category = await getCategoryByName(name)
 		if (category) {
 			throw new Error('Category already exists')
 		}
@@ -50,18 +51,14 @@ export const categoryCreateController = async (request: FastifyRequest<{ Body: T
 }
 
 export const categoryUpdateController = async (
-	request: FastifyRequest<{ Body: TCategoryForm; Params?: { id: number } }>,
+	request: FastifyRequest<{ Body: TCategoryForm; Params: { id: number } }>,
 	reply: FastifyReply
 ) => {
 	try {
 		const { id } = request.params ?? {}
 		const { name, description } = request.body
 
-		const [category, anotherCategory] = await Promise.all([
-			globalPrisma.category.findFirst({ where: { id } }),
-			globalPrisma.category.findFirst({ where: { name } }),
-		])
-
+		const [category, anotherCategory] = await Promise.all([getCategoryById(id), getCategoryByName(name)])
 		if (!category) {
 			throw new Error('Category not found')
 		}
@@ -80,13 +77,12 @@ export const categoryUpdateController = async (
 export const categoryDeleteController = async (request: FastifyRequest<{ Params: { id: number } }>, reply: FastifyReply) => {
 	try {
 		const { id } = request.params ?? {}
-		const category = await globalPrisma.category.findFirst({ where: { id: +id } })
-
+		const category = await getCategoryById(id)
 		if (!category) {
 			throw new Error('Category not found')
 		}
 
-		await globalPrisma.category.delete({ where: { id: +id } })
+		await globalPrisma.category.delete({ where: { id } })
 		return reply.code(200).send({ message: 'Category deleted successfully' })
 	} catch (error: any) {
 		return reply.code(400).send({ message: error.message })

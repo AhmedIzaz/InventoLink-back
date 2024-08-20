@@ -21,7 +21,11 @@ const userRoute = async (fastifyInstance: FastifyInstance) => {
 	// user update
 	fastifyInstance.put('/update/:id', { schema: update, preHandler: [isAdminPermitted] }, userUpdateController)
 	// user delete
-	fastifyInstance.delete('/delete/:id', { preHandler: [isAdminPermitted] }, userDeleteController)
+	fastifyInstance.delete(
+		'/delete/:id',
+		{ schema: userSchema.delete, preHandler: [isAdminPermitted] },
+		userDeleteController
+	)
 }
 
 export default userRoute
