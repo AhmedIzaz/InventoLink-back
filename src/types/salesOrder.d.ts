@@ -1,29 +1,28 @@
-type TPOHeader = {
+type TSOHeader = {
 	id?: number
 	reference_number?: string
 	description?: string
-	supplier_id: number
+	customer_name: string
 	created_by: number
 	total_price: number
 	approval_status?: TApprovalStatus
 }
-type TPORow = {
+type TSORow = {
 	id?: number
 	header_id: number
 	product_id: number
 	product_name: string
 	quantity: number
 	total_price: number
-	description?: string
+	description?: string | null
 }
 
-type TPOListQueryType = TCommonRequestFilter & {
+type TSOListQueryType = TCommonRequestFilter & {
 	approval_status?: TApprovalStatus
-	supplier_id?: number
 	created_by?: number
 }
 
-type TPOCreateUpdatePayload = {
+type TSOCreateUpdatePayload = {
 	header: TPOHeader
 	rows: TPORow[]
 }

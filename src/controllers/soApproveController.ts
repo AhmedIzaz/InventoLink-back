@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { globalPrisma } from '../app'
-import { getCommonFilter } from '../utils'
+import { areProductsQuantityValid, getCommonFilter } from '../utils'
 import { Prisma } from '@prisma/client'
 import { getSOHeader } from '../utils/db.utils'
 
@@ -42,14 +42,18 @@ export const approveSOController = async (
 			globalPrisma.sales_order_row.findMany({ where: { header_id: id } }),
 		])
 		if (!theSOHeader || theSOHeader.approval_status !== 'PENDING') {
-			throw new Error('Invalid Sales Order')
+			return reply.code(400).send({ message: 'Invalid Sales Order' })
 		}
 		//  here next is checking sales order rows quanitity validation check by using
 		// a function like areProductsValid where it will check the valid quantity
-		// const
+		const [areValid, lessQuantityProducts] = await areProductsQuantityValid(soRows)
+		if (!areValid) {
+			return reply.code(400).send({ message: `Insufficient stock for: ${lessQuantityProducts.join(', ')}` })
+		}
+		const approvalStatus = isApprove ? 'APPROVED' : 'REJECTED'
 		await globalPrisma.sales_order_header.update({
 			where: { id },
-			data: { approval_status: isApprove ? 'APPROVED' : 'REJECTED' },
+			data: { approval_status: approvalStatus },
 		})
 		if (isApprove) {
 			await Promise.all([

@@ -104,10 +104,10 @@ export const POUpdateController = async (
 
 		const thePOHeader = await getPOHeader(id)
 		if (!thePOHeader || (thePOHeader?.created_by !== userId && userType !== 'ADMIN')) {
-			throw new Error('You are not authorized to update this Purchase Order')
+			return reply.code(400).send({ message: 'You are not authorized to update this Purchase Order' })
 		}
 		if (thePOHeader?.approval_status !== 'PENDING') {
-			throw new Error('Purchase Order cannot be updated after it is approved or rejected')
+			return reply.code(400).send({ message: 'Purchase Order cannot be updated after it is approved or rejected' })
 		}
 
 		const [validProducts, missingProductNames] = await areProductsValid(rows)

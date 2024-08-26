@@ -43,15 +43,31 @@ export const generateReference = (prefix: string = '') => {
 
 export const areProductsValid = async (rows: TPORow[]): Promise<[boolean, (string | null)[]]> => {
 	// Validate that all products exist
-	const missingProducts = await Promise.all(
-		rows.map(async (product) => {
-			const exist = await globalPrisma.product.findFirst({ where: { id: product.product_id } })
-			return exist ? null : product.product_name
-		})
-	)
-	const missingProductNames = missingProducts.filter(Boolean)
-	const areValid = missingProductNames.length > 0 ? false : true
-	return [areValid, missingProductNames]
+	try {
+		const missingProducts = await Promise.all(
+			rows.map(async (product) => {
+				const exist = await globalPrisma.product.findFirst({ where: { id: product.product_id } })
+				return exist ? null : product.product_name
+			})
+		)
+		const missingProductNames = missingProducts.filter(Boolean) as string[]
+		return [missingProductNames.length === 0, missingProductNames]
+	} catch (err: any) {
+		throw new Error(err.message || 'Error while validating products, try again later')
+	}
 }
 
-
+export const areProductsQuantityValid = async (rows: TSORow[]): Promise<[boolean, (string | null)[]]> => {
+	try {
+		const invalidQuantityProduct = await Promise.all(
+			rows.map(async ({ product_id, quantity, product_name }) => {
+				const product = await globalPrisma.inventory_stock.findFirst({ where: { product_id } })
+				return !product || product.quantity < quantity ? product_name : null
+			})
+		)
+		const lessQuantityProducts = invalidQuantityProduct.filter(Boolean) as string[]
+		return [lessQuantityProducts.length === 0, lessQuantityProducts]
+	} catch (err: any) {
+		throw new Error(err.message || 'Error while validating products quantity, try again later')
+	}
+}

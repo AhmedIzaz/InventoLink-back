@@ -69,6 +69,7 @@ model inventory_transaction {
   product_name         String                   @db.VarChar(100)
   transaction_quantity Float
   type                 InventoryTransactionType
+  created_at           DateTime                 @default(now()) @db.Timestamptz(6)
   productId            product                  @relation(fields: [product_id], references: [id])
 }
 
