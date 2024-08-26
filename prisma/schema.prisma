@@ -49,7 +49,7 @@ model product {
   description           String?                 @db.VarChar(200)
   price                 Float
   category_id           Int
-  inventory_stock       inventory_stock[]
+  inventory_stock       inventory_stock?
   inventory_transaction inventory_transaction[]
   categoryId            category                @relation(fields: [category_id], references: [id])
   purchase_order_row    purchase_order_row[]
@@ -57,19 +57,19 @@ model product {
 }
 
 model inventory_stock {
-  product_id Int
+  product_id Int     @unique
   quantity   Float
   id         Int     @id @default(autoincrement())
   productId  product @relation(fields: [product_id], references: [id])
 }
 
 model inventory_transaction {
-  id                   Int     @id @default(autoincrement())
-  type                 String  @db.VarChar(50)
+  id                   Int                      @id @default(autoincrement())
   product_id           Int
-  product_name         String  @db.VarChar(100)
+  product_name         String                   @db.VarChar(100)
   transaction_quantity Float
-  productId            product @relation(fields: [product_id], references: [id])
+  type                 InventoryTransactionType
+  productId            product                  @relation(fields: [product_id], references: [id])
 }
 
 model purchase_order_header {
@@ -101,23 +101,24 @@ model sales_order_header {
   id               Int               @id @default(autoincrement())
   reference_number String            @db.VarChar(255)
   description      String?           @db.VarChar(200)
-  approval_status  String            @db.VarChar(50)
   customer_name    String            @db.VarChar(100)
   created_by       Int
   total_price      Float
+  approval_status  ApprovalStatus
   createdBy        user              @relation(fields: [created_by], references: [id])
   sales_order_row  sales_order_row[]
 }
 
 model sales_order_row {
-  id          Int                @id @default(autoincrement())
-  header_id   Int
-  product_id  Int
-  quantity    Float
-  total_price Float
-  description String?            @db.VarChar(200)
-  headerId    sales_order_header @relation(fields: [header_id], references: [id])
-  productId   product            @relation(fields: [product_id], references: [id])
+  id           Int                @id @default(autoincrement())
+  header_id    Int
+  product_id   Int
+  quantity     Float
+  total_price  Float
+  description  String?            @db.VarChar(200)
+  product_name String             @db.VarChar(100)
+  headerId     sales_order_header @relation(fields: [header_id], references: [id])
+  productId    product            @relation(fields: [product_id], references: [id])
 }
 
 enum UserType {
@@ -136,4 +137,9 @@ enum ApprovalStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum InventoryTransactionType {
+  IN
+  OUT
 }

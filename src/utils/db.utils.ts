@@ -11,11 +11,9 @@ export const getSupplierByEmail = async (email: string) => globalPrisma.supplier
 // category related queries
 export const getCategoryById = async (id: number) => globalPrisma.category.findFirst({ where: { id } })
 export const getCategoryByName = async (name: string) => globalPrisma.category.findFirst({ where: { name } })
-
 //
 // product
 export const getProductById = async (id: number) => globalPrisma.product.findFirst({ where: { id } })
-
 //
 // inventory stock related queries
 export const getInventoryStockById = async (id: number) => globalPrisma.inventory_stock.findFirst({ where: { id } })
@@ -32,3 +30,6 @@ export const deletePOHeader = async (id: number) => globalPrisma.purchase_order_
 export const createPORows = async (rows: TPORow[], header_id: number) =>
 	globalPrisma.purchase_order_row.createMany({ data: rows?.map((item) => ({ ...item, header_id })) })
 export const deletePORows = async (header_id: number) => globalPrisma.purchase_order_row.deleteMany({ where: { header_id } })
+
+// SO header related queries
+export const getSOHeader = async (id: number) => globalPrisma.sales_order_header.findFirst({ where: { id } })
