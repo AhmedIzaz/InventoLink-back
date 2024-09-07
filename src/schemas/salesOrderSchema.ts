@@ -38,10 +38,12 @@ const salesOrderCreateSchema: FastifySchema = {
 const salesOrderSchema: TSalesOrderSchema = {
 	list: commonRequestFilter({ created_by: { type: 'number' }, approval_status: { type: 'string' } }),
 	create: salesOrderCreateSchema,
+	update: { ...salesOrderCreateSchema, params: { type: 'object', properties: { id: { type: 'number' } } } },
 }
 
 export default salesOrderSchema
 type TSalesOrderSchema = {
 	list: FastifySchema
 	create: FastifySchema
+	update: FastifySchema
 }
