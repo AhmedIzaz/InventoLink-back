@@ -1,8 +1,8 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { globalPrisma } from '../app'
-import { areProductsQuantityValid, getCommonFilter } from '../utils'
+import { areProductsQuantityValid, generateReference, getCommonFilter, SO_REF_PREFIX } from '../utils'
 import { Prisma } from '@prisma/client'
-import { getSOHeader } from '../utils/db.utils'
+import { createSORows, getSOHeader, getUser } from '../utils/db.utils'
 
 export const getSOListController = async (
 	request: FastifyRequest<{ Querystring: TSOListQueryType }>,
@@ -29,6 +29,47 @@ export const getSOListController = async (
 	}
 }
 
+export const salesOrderCreateController = async (
+	request: FastifyRequest<{ Body: TSOCreateUpdatePayload }>,
+	reply: FastifyReply
+) => {
+	try {
+		const { header, rows } = request.body
+		// check the  user is exist or not
+		const user = await getUser(header.created_by)
+		const invalidUser = !user || user.userType.name === 'WAREHOUSE_STAFF'
+		if (invalidUser) {
+			return reply.code(404).send({ message: 'User invalid' })
+		}
+		// check product quantity validation
+		const [areValid, lessQuantityProducts] = await areProductsQuantityValid(rows)
+		if (!areValid) {
+			return reply.code(400).send({ message: `Insufficient stock for: ${lessQuantityProducts.join(', ')}` })
+		}
+		// now everthing is clear to create header and row with header id for sales order
+		const soHeader = await globalPrisma.sales_order_header.create({
+			data: {
+				...header,
+				approval_status: 'PENDING',
+				reference_number: generateReference(SO_REF_PREFIX),
+			},
+		})
+		await createSORows(rows, soHeader.id)
+		return reply.code(200).send({ message: `Sales-Order created successfully` })
+	} catch (err: any) {
+		return reply.code(400).send({ message: err.message })
+	}
+}
+export const salesOrderUpdateController = async (
+	request: FastifyRequest<{ Body: TSOCreateUpdatePayload; Params: { id: number } }>,
+	reply: FastifyReply
+) => {
+	try {
+		return reply.code(200).send({ message: `Sales-Order updated successfully` })
+	} catch (err: any) {
+		return reply.code(400).send({ message: err.message })
+	}
+}
 export const approveSOController = async (
 	request: FastifyRequest<{ Body: TSOApproveBody; Params: { id: number } }>,
 	reply: FastifyReply

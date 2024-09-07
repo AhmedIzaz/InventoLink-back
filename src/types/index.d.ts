@@ -1,4 +1,4 @@
-type TFastifyRequestInit = {
+type TFastifyRequestInit<Tb, Tq, Tp> = {
 	Body?: Tb
 	Querystring?: Tq
 	Params?: Tp

@@ -2,7 +2,7 @@ import { globalPrisma } from '../app'
 
 //
 // user related queries
-export const getUser = async (id: number) => globalPrisma.user.findFirst({ where: { id } })
+export const getUser = async (id: number) => globalPrisma.user.findFirst({ where: { id }, include: { userType: true } })
 export const getUserByEmail = async (email: string) => globalPrisma.user.findFirst({ where: { email } })
 //
 // supplier related queries
@@ -33,3 +33,8 @@ export const deletePORows = async (header_id: number) => globalPrisma.purchase_o
 
 // SO header related queries
 export const getSOHeader = async (id: number) => globalPrisma.sales_order_header.findFirst({ where: { id } })
+export const deleteSOHeader = async (id: number) => globalPrisma.sales_order_header.delete({ where: { id } })
+// SO row related queries
+export const createSORows = async (rows: TSORow[], header_id: number) =>
+	globalPrisma.sales_order_row.createMany({ data: rows?.map((item) => ({ ...item, header_id })) })
+export const deleteSORows = async (header_id: number) => globalPrisma.sales_order_row.deleteMany({ where: { header_id } })

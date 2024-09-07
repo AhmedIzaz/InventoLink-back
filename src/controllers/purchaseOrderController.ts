@@ -68,8 +68,9 @@ export const POCreateController = async (request: FastifyRequest<{ Body: TPOCrea
 		const { header, rows } = { ...(request.body ?? {}) }
 		// check the supplier and user is exist or not
 		const [user, supplier] = await Promise.all([getUser(header.created_by), getSupplier(header.supplier_id)])
-		if (!user || !supplier) {
-			return reply.code(404).send({ message: 'User or Supplier not found' })
+		const userInvalid = !user || !supplier || user.userType.name === 'SALES_STAFF'
+		if (userInvalid) {
+			return reply.code(404).send({ message: 'User or Supplier invalid' })
 		}
 		const [validProducts, missingProductNames] = await areProductsValid(rows)
 		if (!validProducts) {

@@ -23,6 +23,6 @@ type TSOListQueryType = TCommonRequestFilter & {
 }
 
 type TSOCreateUpdatePayload = {
-	header: TPOHeader
-	rows: TPORow[]
+	header: TSOHeader
+	rows: TSORow[]
 }
