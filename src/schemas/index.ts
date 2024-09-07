@@ -1,6 +1,6 @@
 import { FastifySchema } from 'fastify'
 
-export const commonRequestFilter = (properties?: Record<string, any>) => {
+export const commonRequestFilter = (properties?: Record<string, any>, requiredFields?: string[]) => {
 	return {
 		querystring: {
 			type: 'object',
@@ -9,7 +9,7 @@ export const commonRequestFilter = (properties?: Record<string, any>) => {
 				current: { type: 'number' },
 				...properties,
 			},
-			required: ['pageSize', 'current'],
+			required: ['pageSize', 'current', ...(requiredFields ?? [])],
 		},
 	}
 }

@@ -141,3 +141,48 @@ export const PODeleteController = async (request: FastifyRequest<{ Params: { id:
 		return reply.code(400).send({ message: err.message })
 	}
 }
+
+export const approvePOController = async (
+	request: FastifyRequest<{ Body: TPOApproveBody; Params: { id: number } }>,
+	reply: FastifyReply
+) => {
+	try {
+		const { id } = request.params
+		const { isApprove } = request.body
+		// check is po exist
+		const thePOHeader = await getPOHeader(id)
+		if (!thePOHeader || thePOHeader.approval_status !== 'PENDING') {
+			throw new Error('Invalid Purchase Order')
+		}
+
+		await globalPrisma.purchase_order_header.update({
+			where: { id },
+			data: { approval_status: isApprove ? 'APPROVED' : 'REJECTED' },
+		})
+
+		if (isApprove) {
+			const poRows = await globalPrisma.purchase_order_row.findMany({ where: { header_id: id } })
+			await Promise.all([
+				...poRows.map(({ product_id, quantity }) =>
+					globalPrisma.inventory_stock.upsert({
+						where: { product_id },
+						update: { quantity: { increment: quantity } },
+						create: { product_id, quantity },
+					})
+				),
+				globalPrisma.inventory_transaction.createMany({
+					data: poRows.map(({ product_id, product_name, quantity }) => ({
+						type: 'IN',
+						product_id,
+						product_name,
+						transaction_quantity: quantity,
+					})),
+				}),
+			])
+		}
+
+		return reply.code(200).send({ message: `Purchase-Order ${isApprove ? `approved` : `rejected`} successfully` })
+	} catch (err: any) {
+		return reply.code(400).send({ message: err.message })
+	}
+}

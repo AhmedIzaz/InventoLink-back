@@ -15,9 +15,14 @@ const approveBody: FastifySchema = {
 }
 
 const approvalSchema: TApprovalSchema = {
-	poList: commonRequestFilter({ supplier_id: { type: 'number' }, created_by: { type: 'number' } }),
+	poList: commonRequestFilter(
+		{ supplier_id: { type: 'number' }, created_by: { type: 'number' }, approval_status: { type: 'string' } },
+		['approval_status']
+	),
 	poApprove: approveBody,
-	soList: commonRequestFilter({ created_by: { type: 'number' } }),
+	soList: commonRequestFilter({ created_by: { type: 'number' }, approval_status: { type: 'string' } }, [
+		'approval_status',
+	]),
 	soApprove: approveBody,
 }
 

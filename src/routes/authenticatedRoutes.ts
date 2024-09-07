@@ -7,6 +7,7 @@ import productRoute from './productRoute'
 import inventoryStockRoute from './inventoryStockRoute'
 import purchaseOrderRoute from './purchaseOrderRoutes'
 import approvalRoute from './approvalRoutes'
+import salesOrderRoutes from './salesOrderRoutes'
 
 const authenticatedRoute = async (fastifyInstance: FastifyInstance) => {
 	fastifyInstance.addHook('onRequest', isLoggedIn)
@@ -17,6 +18,7 @@ const authenticatedRoute = async (fastifyInstance: FastifyInstance) => {
 	await fastifyInstance.register(supplierRoute, { prefix: '/supplier' })
 	await fastifyInstance.register(inventoryStockRoute, { prefix: '/inventory-stock' })
 	await fastifyInstance.register(purchaseOrderRoute, { prefix: '/purchase-order' })
+	await fastifyInstance.register(salesOrderRoutes, { prefix: '/sales-order' })
 	await fastifyInstance.register(approvalRoute, { prefix: '/approval' })
 }
 

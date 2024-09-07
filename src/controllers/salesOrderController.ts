@@ -4,16 +4,16 @@ import { areProductsQuantityValid, getCommonFilter } from '../utils'
 import { Prisma } from '@prisma/client'
 import { getSOHeader } from '../utils/db.utils'
 
-export const getSOApproveListController = async (
-	request: FastifyRequest<{ Querystring: TSOApprovalListQueryType }>,
+export const getSOListController = async (
+	request: FastifyRequest<{ Querystring: TSOListQueryType }>,
 	reply: FastifyReply
 ) => {
 	try {
-		const { pageSize, current, orderBy, orderField, search = '', created_by } = request?.query
+		const { pageSize, current, approval_status, orderBy, orderField, search = '', created_by } = request?.query
 		const args = {
 			...getCommonFilter({ pageSize, current, orderBy, orderField }),
 			where: {
-				approval_status: 'PENDING',
+				approval_status,
 				created_by,
 				OR: [{ reference_number: { contains: search } }],
 			} as Prisma.sales_order_headerWhereInput,
@@ -44,8 +44,6 @@ export const approveSOController = async (
 		if (!theSOHeader || theSOHeader.approval_status !== 'PENDING') {
 			return reply.code(400).send({ message: 'Invalid Sales Order' })
 		}
-		//  here next is checking sales order rows quanitity validation check by using
-		// a function like areProductsValid where it will check the valid quantity
 		const [areValid, lessQuantityProducts] = await areProductsQuantityValid(soRows)
 		if (!areValid) {
 			return reply.code(400).send({ message: `Insufficient stock for: ${lessQuantityProducts.join(', ')}` })

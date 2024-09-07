@@ -37,7 +37,11 @@ const purchaseOrderCreateSchema: FastifySchema = {
 }
 
 const purchaseOrderSchema: TPurchaseOrderSchema = {
-	list: commonRequestFilter(),
+	list: commonRequestFilter({
+		supplier_id: { type: 'number' },
+		created_by: { type: 'number' },
+		approval_status: { type: 'string' },
+	}),
 	details: { params: { type: 'object', properties: { id: { type: 'number' } } } },
 	create: purchaseOrderCreateSchema,
 	update: { ...purchaseOrderCreateSchema, params: { type: 'object', properties: { id: { type: 'number' } } } },
