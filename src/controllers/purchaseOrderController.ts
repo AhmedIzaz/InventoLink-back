@@ -32,6 +32,7 @@ export const POListController = async (request: FastifyRequest<{ Querystring: TP
 				created_by,
 				OR: [{ reference_number: { contains: search, mode: 'insensitive' } }],
 			} as Prisma.purchase_order_headerWhereInput,
+			include: { supplierId: { select: { name: true } }, createdBy: { select: { username: true } } },
 		}
 		const [data, total] = await Promise.all([
 			globalPrisma.purchase_order_header.findMany(args),
