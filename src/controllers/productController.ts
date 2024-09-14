@@ -43,7 +43,7 @@ export const searchableProductDDLController = async (
 	const { search } = request.query
 	try {
 		const products = await globalPrisma.product.findMany({
-			where: { name: { startsWith: search } },
+			where: { name: { contains: search, mode: 'insensitive' } },
 			take: 200,
 		})
 		const dropdownList = makeDDL<TProduct>(products, 'name', 'id')

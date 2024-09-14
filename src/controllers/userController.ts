@@ -15,8 +15,10 @@ export const userListController = async (
 		const args = {
 			...getCommonFilter({ pageSize, current, orderBy, orderField }),
 			where: {
-				id: { not: 1 },
-				user_type_id,
+				user_type_id: {
+					not: 1,
+					equals: user_type_id,
+				},
 				oauthProvider,
 				OR: [
 					{ username: { contains: search, mode: 'insensitive' } },
@@ -49,7 +51,7 @@ export const userListController = async (
 export const userTypeDDLController = async (_: FastifyRequest, reply: FastifyReply) => {
 	try {
 		const userTypes = await globalPrisma.user_type.findMany({ where: { NOT: { name: 'ADMIN' } } })
-		const dropdownList = makeDDL<TUserType>(userTypes!, 'formated_name', 'id')
+		const dropdownList = makeDDL<TUserType>(userTypes!, 'formated_name', 'id', true)
 		return reply.code(200).send(dropdownList)
 	} catch (err: any) {
 		return reply.code(400).send({ message: err.message })
@@ -120,5 +122,28 @@ export const userDeleteController = async (request: FastifyRequest<{ Params: { i
 		return reply.code(200).send({ message: 'User deleted successfully' })
 	} catch (error: any) {
 		return reply.code(400).send({ message: error.message })
+	}
+}
+
+export const searchableUserDDLController = async (
+	request: FastifyRequest<{ Querystring: { search?: string; user_type_id?: number } }>,
+	reply: FastifyReply
+) => {
+	const { search, user_type_id } = request.query
+	try {
+		const userList = await globalPrisma.user.findMany({
+			where: {
+				username: { contains: search, mode: 'insensitive' },
+				user_type_id: {
+					not: 1,
+					equals: user_type_id,
+				},
+			},
+			take: 200,
+		})
+		const dropdownList = makeDDL<TUser>(userList, 'username', 'id')
+		return reply.code(200).send(dropdownList)
+	} catch (err: any) {
+		return reply.code(400).send({ message: err.message })
 	}
 }

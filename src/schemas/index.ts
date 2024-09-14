@@ -14,10 +14,12 @@ export const commonRequestFilter = (properties?: Record<string, any>, requiredFi
 	}
 }
 
-export const commonSearchableRequestFilter: FastifySchema = {
-	querystring: {
-		type: 'object',
-		properties: { search: { type: 'string', minLength: 3, maxLength: 50 } },
-		required: ['search'],
-	},
+export const commonSearchableRequestFilter = (properties?: any, requireds?: string[]): FastifySchema => {
+	return {
+		querystring: {
+			type: 'object',
+			properties: { search: { type: 'string', maxLength: 50 }, ...properties },
+			required: ['search', ...(requireds ?? [])],
+		},
+	}
 }

@@ -1,6 +1,6 @@
 import { globalPrisma } from '../app'
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { getCommonFilter } from '../utils'
+import { getCommonFilter, makeDDL } from '../utils'
 import { Prisma } from '@prisma/client'
 import { getSupplier, getSupplierByEmail } from '../utils/db.utils'
 
@@ -86,5 +86,22 @@ export const supplierDeleteController = async (request: FastifyRequest<{ Params:
 		return reply.code(200).send({ message: 'Supplier deleted successfully' })
 	} catch (error: any) {
 		return reply.code(400).send({ message: error.message })
+	}
+}
+
+export const searchableSupplierDDLController = async (
+	request: FastifyRequest<{ Querystring: { search?: string } }>,
+	reply: FastifyReply
+) => {
+	const { search } = request.query
+	try {
+		const supplierList = await globalPrisma.supplier.findMany({
+			where: { name: { contains: search, mode: 'insensitive' } },
+			take: 200,
+		})
+		const dropdownList = makeDDL<TSupplier>(supplierList, 'name', 'id')
+		return reply.code(200).send(dropdownList)
+	} catch (err: any) {
+		return reply.code(400).send({ message: err.message })
 	}
 }
