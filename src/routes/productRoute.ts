@@ -16,7 +16,11 @@ const productRoute = async (fastifyInstance: FastifyInstance) => {
 	// product list
 	fastifyInstance.get('/list', { schema: list }, productListController)
 	// product dropdown searchable
-	fastifyInstance.get('/searchable-ddl', { schema: commonSearchableRequestFilter() }, searchableProductDDLController)
+	fastifyInstance.get(
+		'/searchable-ddl',
+		{ schema: commonSearchableRequestFilter({ spreadOtherFields: { type: 'boolean' } }) },
+		searchableProductDDLController
+	)
 	// product create
 	fastifyInstance.post('/create', { schema: create, preHandler: [isAdminPermitted] }, productCreateController)
 	// product update

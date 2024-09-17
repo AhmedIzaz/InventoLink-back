@@ -15,6 +15,7 @@ const purchaseOrderCreateSchema: FastifySchema = {
 					total_price: { type: 'number' },
 				},
 				required: ['supplier_id', 'created_by', 'total_price'],
+				additionalProperties: false,
 			},
 			rows: {
 				type: 'array',
@@ -29,6 +30,7 @@ const purchaseOrderCreateSchema: FastifySchema = {
 						description: { type: 'string' },
 					},
 					required: ['product_id', 'product_name', 'quantity', 'total_price'],
+					additionalProperties: false,
 				},
 			},
 		},

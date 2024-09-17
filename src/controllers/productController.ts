@@ -37,16 +37,16 @@ export const productListController = async (
 }
 
 export const searchableProductDDLController = async (
-	request: FastifyRequest<{ Querystring: { search?: string } }>,
+	request: FastifyRequest<{ Querystring: { search?: string; spreadOtherFields?: boolean } }>,
 	reply: FastifyReply
 ) => {
-	const { search } = request.query
+	const { search, spreadOtherFields } = request.query
 	try {
 		const products = await globalPrisma.product.findMany({
 			where: { name: { contains: search, mode: 'insensitive' } },
 			take: 200,
 		})
-		const dropdownList = makeDDL<TProduct>(products, 'name', 'id')
+		const dropdownList = makeDDL<TProduct>(products, 'name', 'id', spreadOtherFields)
 		return reply.code(200).send(dropdownList)
 	} catch (err: any) {
 		return reply.code(400).send({ message: err.message })

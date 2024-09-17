@@ -52,13 +52,18 @@ export const PODetailsController = async (request: FastifyRequest<{ Params: { id
 		const { id } = request.params
 		const header = await globalPrisma.purchase_order_header.findFirst({
 			where: { id },
-			include: { purchase_order_row: true },
+			include: { purchase_order_row: { include: { productId: { select: { price: true } } } } },
 		})
 		if (!header) {
 			return reply.code(404).send({ message: 'Purchase Order not found' })
 		}
-		const { purchase_order_row, ...purchase_order_header } = { ...(header ?? {}) }
-		return reply.code(200).send({ data: { header: purchase_order_header, rows: purchase_order_row } })
+		const { purchase_order_row = [], ...purchase_order_header } = { ...(header ?? {}) }
+		const rows = purchase_order_row.map((item) => ({
+			...item,
+			quantity_price: item.productId?.price,
+		}))
+
+		return reply.code(200).send({ data: { header: purchase_order_header, rows } })
 	} catch (err: any) {
 		return reply.code(400).send({ message: err.message })
 	}
@@ -67,6 +72,7 @@ export const PODetailsController = async (request: FastifyRequest<{ Params: { id
 export const POCreateController = async (request: FastifyRequest<{ Body: TPOCreateUpdatePayload }>, reply: FastifyReply) => {
 	try {
 		const { header, rows } = { ...(request.body ?? {}) }
+		console.log({rows})
 		// check the supplier and user is exist or not
 		const [user, supplier] = await Promise.all([getUser(header.created_by), getSupplier(header.supplier_id)])
 		const userInvalid = !user || !supplier || user.userType.name === 'SALES_STAFF'

@@ -23,7 +23,7 @@ export const notLoggedIn = async (request: FastifyRequest, reply: FastifyReply) 
 export const isLoggedIn = async (request: FastifyRequest, reply: FastifyReply) => {
 	try {
 		const token = request?.headers?.authorization?.split(' ')[1]
-		if (!token) return reply.status(400).send({ message: 'Authentication required' })
+		if (!token) return reply.status(401).send({ message: 'Authentication required' })
 		// this will automatically throw an error if the token is expired which will take it to the catch block and throw error response, else it will return the tokens main data
 		const data = jwt.verify(token, process.env.JWT_SECRET_KEY!, {
 			ignoreExpiration: false,
