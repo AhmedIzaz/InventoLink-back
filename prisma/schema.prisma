@@ -81,6 +81,8 @@ model purchase_order_header {
   supplier_id        Int
   created_by         Int
   total_price        Float
+  created_at         DateTime?            @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime?            @default(now()) @updatedAt @db.Timestamptz(6)
   createdBy          user                 @relation(fields: [created_by], references: [id])
   supplierId         supplier             @relation(fields: [supplier_id], references: [id])
   purchase_order_row purchase_order_row[]
