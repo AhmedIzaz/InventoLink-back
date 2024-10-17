@@ -6,7 +6,7 @@ const inventoryStockCreateSchema: FastifySchema = {
 		type: 'object',
 		properties: {
 			product_id: { type: 'number' },
-			quantity: { type: 'number' },
+			quantity: { type: 'number', minimum: 1 },
 		},
 		required: ['product_id', 'quantity'],
 	},

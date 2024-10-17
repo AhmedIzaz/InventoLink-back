@@ -29,7 +29,7 @@ export const isLoggedIn = async (request: FastifyRequest, reply: FastifyReply) =
 			ignoreExpiration: false,
 		})
 		const user = await getUser((data as TToken).id!)
-		if (!user) return reply.status(400).send({ message: 'User not found' })
+		if (!user) return reply.status(401).send({ message: 'User not found' })
 		request.user = data as TToken // dont include user because user has password..so we dont want to include password in the request
 	} catch (err: any) {
 		return reply.status(401).send({ message: err.message })

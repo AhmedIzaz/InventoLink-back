@@ -7,7 +7,7 @@ const productCreateSchema: FastifySchema = {
 		properties: {
 			name: { type: 'string', minLength: 3 },
 			description: { type: 'string' },
-			price: { type: 'number' },
+			price: { type: 'number', minimum: 1 },
 			category_id: { type: 'number' },
 		},
 		required: ['name', 'price', 'category_id'],

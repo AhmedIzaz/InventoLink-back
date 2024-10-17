@@ -8,13 +8,13 @@ const salesOrderCreateSchema: FastifySchema = {
 			header: {
 				type: 'object',
 				properties: {
-					reference_number: { type: 'string' },
 					description: { type: 'string' },
 					customer_name: { type: 'string' },
 					created_by: { type: 'number' },
-					total_price: { type: 'number' },
+					total_price: { type: 'number', minimum: 1 },
 				},
 				required: ['created_by', 'total_price', 'customer_name'],
+				additionalProperties: false,
 			},
 			rows: {
 				type: 'array',
@@ -24,11 +24,12 @@ const salesOrderCreateSchema: FastifySchema = {
 					properties: {
 						product_id: { type: 'number' },
 						product_name: { type: 'string' },
-						quantity: { type: 'number' },
-						total_price: { type: 'number' },
+						quantity: { type: 'number', minimum: 1 },
+						total_price: { type: 'number', minimum: 1 },
 						description: { type: 'string' },
 					},
 					required: ['product_id', 'product_name', 'quantity', 'total_price'],
+					additionalProperties: false,
 				},
 			},
 		},
