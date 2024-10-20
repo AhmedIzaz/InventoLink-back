@@ -34,6 +34,8 @@ export const deletePORows = async (header_id: number) => globalPrisma.purchase_o
 // SO header related queries
 export const getSOHeader = async (id: number) => globalPrisma.sales_order_header.findFirst({ where: { id } })
 export const deleteSOHeader = async (id: number) => globalPrisma.sales_order_header.delete({ where: { id } })
+export const updateSOHeader = async (id: number, data: TSOHeader) =>
+	globalPrisma.sales_order_header.update({ where: { id }, data })
 // SO row related queries
 export const createSORows = async (rows: TSORow[], header_id: number) =>
 	globalPrisma.sales_order_row.createMany({ data: rows?.map((item) => ({ ...item, header_id })) })

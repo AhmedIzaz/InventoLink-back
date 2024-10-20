@@ -10,7 +10,7 @@ import {
 } from '../controllers/purchaseOrderController'
 
 const purchaseOrderRoute = async (fastifyInstance: FastifyInstance) => {
-	const { details, list, create, update } = purchaseOrderSchema
+	const { details, list, create, update, delete: _delete } = purchaseOrderSchema
 
 	fastifyInstance.addHook('preHandler', isWarehouseStaffPermitted)
 	// PO list
@@ -22,7 +22,7 @@ const purchaseOrderRoute = async (fastifyInstance: FastifyInstance) => {
 	// PO update
 	fastifyInstance.put('/update/:id', { schema: update }, POUpdateController)
 	// PO delete
-	fastifyInstance.delete('/delete/:id', { schema: purchaseOrderSchema.delete }, PODeleteController)
+	fastifyInstance.delete('/delete/:id', { schema: _delete }, PODeleteController)
 }
 
 export default purchaseOrderRoute

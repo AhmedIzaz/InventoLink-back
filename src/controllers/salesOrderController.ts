@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from 'fastify'
 import { globalPrisma } from '../app'
 import { areProductsQuantityValid, generateReference, getCommonFilter, SO_REF_PREFIX } from '../utils'
 import { Prisma } from '@prisma/client'
-import { createSORows, getSOHeader, getUser } from '../utils/db.utils'
+import { createSORows, deleteSOHeader, deleteSORows, getSOHeader, getUser, updateSOHeader } from '../utils/db.utils'
 
 export const getSOListController = async (
 	request: FastifyRequest<{ Querystring: TSOListQueryType }>,
@@ -24,6 +24,32 @@ export const getSOListController = async (
 		])
 		const pageInfo = { pageSize, current, total }
 		return reply.code(200).send({ data, pageInfo })
+	} catch (err: any) {
+		return reply.code(400).send({ message: err.message })
+	}
+}
+
+// SO details by using SO header id
+export const SODetailsController = async (request: FastifyRequest<{ Params: { id: number } }>, reply: FastifyReply) => {
+	try {
+		const { id } = request.params
+		const header = await globalPrisma.sales_order_header.findFirst({
+			where: { id },
+			include: {
+				createdBy: { select: { username: true, contact: true } },
+				sales_order_row: { include: { productId: { select: { price: true } } } },
+			},
+		})
+		if (!header) {
+			return reply.code(404).send({ message: 'Sales Order not found' })
+		}
+		const { sales_order_row = [], ...sales_order_header } = { ...(header ?? {}) }
+		const rows = sales_order_row.map((item) => ({
+			...item,
+			quantity_price: item.productId?.price,
+		}))
+
+		return reply.code(200).send({ data: { header: sales_order_header, rows } })
 	} catch (err: any) {
 		return reply.code(400).send({ message: err.message })
 	}
@@ -65,7 +91,51 @@ export const salesOrderUpdateController = async (
 	reply: FastifyReply
 ) => {
 	try {
+		const { id } = request.params
+		const { header, rows } = request.body
+		const [userId, userType] = [request.user.id, request.user.userType.name as TUserTypes]
+		// check the user is exist or not
+		const user = await getUser(header.created_by)
+		if (!user) {
+			return reply.code(404).send({ message: 'User not found' })
+		}
+		const theSOHeader = await getSOHeader(id)
+
+		if (!theSOHeader || (theSOHeader?.created_by !== userId && userType !== 'ADMIN')) {
+			return reply.code(400).send({ message: 'You are not authorized to update this Sales Order' })
+		}
+		if (theSOHeader?.approval_status !== 'PENDING') {
+			return reply.code(400).send({ message: 'Sales Order cannot be updated after it is approved or rejected' })
+		}
+
+		// check product quantity validation
+		const [areValid, lessQuantityProducts] = await areProductsQuantityValid(rows)
+		if (!areValid) {
+			return reply.code(400).send({ message: `Insufficient stock for: ${lessQuantityProducts.join(', ')}` })
+		}
+
+		await Promise.all([updateSOHeader(id, header), deleteSORows(id)])
+		await createSORows(rows, id)
 		return reply.code(200).send({ message: `Sales-Order updated successfully` })
+	} catch (err: any) {
+		return reply.code(400).send({ message: err.message })
+	}
+}
+export const SODeleteController = async (request: FastifyRequest<{ Params: { id: number } }>, reply: FastifyReply) => {
+	try {
+		const [userId, userType] = [request.user.id, request.user.userType.name as TUserTypes]
+		const { id } = request.params
+		const theSOHeader = await getSOHeader(id)
+
+		if (!theSOHeader || !(theSOHeader?.created_by === userId || userType === 'ADMIN')) {
+			throw new Error('You are not authorized to delete this Sales Order')
+		}
+		if (theSOHeader?.approval_status !== 'PENDING') {
+			throw new Error('Sales Order cannot be deleted after it is approved or rejected')
+		}
+		await deleteSORows(id)
+		await deleteSOHeader(id)
+		return reply.code(200).send({ message: 'Sales Order deleted successfully' })
 	} catch (err: any) {
 		return reply.code(400).send({ message: err.message })
 	}
