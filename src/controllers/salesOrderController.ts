@@ -9,12 +9,22 @@ export const getSOListController = async (
 	reply: FastifyReply
 ) => {
 	try {
-		const { pageSize, current, approval_status, orderBy, orderField, search = '', created_by } = request?.query
+		const {
+			pageSize,
+			current,
+			approval_status,
+			orderBy,
+			orderField,
+			search = '',
+			created_by,
+			customer_name,
+		} = request?.query
 		const args = {
 			...getCommonFilter({ pageSize, current, orderBy, orderField }),
 			where: {
 				approval_status,
 				created_by,
+				customer_name,
 				OR: [{ reference_number: { contains: search } }],
 			} as Prisma.sales_order_headerWhereInput,
 		}
