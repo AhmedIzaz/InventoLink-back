@@ -15,7 +15,7 @@ export const inventoryStockListController = async (
 			where: {
 				OR: [{ productId: { name: { contains: search, mode: 'insensitive' } } }],
 			} as Prisma.inventory_stockWhereInput,
-			include: { productId: { select: { name: true, price: true } } },
+			include: { productId: { select: { name: true, price: true, description: true } } },
 		}
 		const [data, total] = await Promise.all([
 			globalPrisma.inventory_stock.findMany(args),
